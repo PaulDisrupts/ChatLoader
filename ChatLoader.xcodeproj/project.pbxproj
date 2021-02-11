@@ -16,6 +16,7 @@
 		9CD1E57225D57F3C0012A02C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9CD1E57025D57F3C0012A02C /* LaunchScreen.storyboard */; };
 		9CD1E57D25D57F3C0012A02C /* ChatLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E57C25D57F3C0012A02C /* ChatLoaderTests.swift */; };
 		9CD1E58825D57F3C0012A02C /* ChatLoaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E58725D57F3C0012A02C /* ChatLoaderUITests.swift */; };
+		9CD1E59A25D581590012A02C /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E59925D581590012A02C /* Helper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		9CD1E58325D57F3C0012A02C /* ChatLoaderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChatLoaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CD1E58725D57F3C0012A02C /* ChatLoaderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLoaderUITests.swift; sourceTree = "<group>"; };
 		9CD1E58925D57F3C0012A02C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9CD1E59925D581590012A02C /* Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +103,7 @@
 		9CD1E56125D57F3A0012A02C /* ChatLoader */ = {
 			isa = PBXGroup;
 			children = (
+				9CD1E59825D581380012A02C /* Objects */,
 				9CD1E56225D57F3A0012A02C /* AppDelegate.swift */,
 				9CD1E56425D57F3A0012A02C /* SceneDelegate.swift */,
 				9CD1E56625D57F3A0012A02C /* ViewController.swift */,
@@ -129,6 +132,14 @@
 				9CD1E58925D57F3C0012A02C /* Info.plist */,
 			);
 			path = ChatLoaderUITests;
+			sourceTree = "<group>";
+		};
+		9CD1E59825D581380012A02C /* Objects */ = {
+			isa = PBXGroup;
+			children = (
+				9CD1E59925D581590012A02C /* Helper.swift */,
+			);
+			path = Objects;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -263,6 +274,7 @@
 			files = (
 				9CD1E56725D57F3A0012A02C /* ViewController.swift in Sources */,
 				9CD1E56325D57F3A0012A02C /* AppDelegate.swift in Sources */,
+				9CD1E59A25D581590012A02C /* Helper.swift in Sources */,
 				9CD1E56D25D57F3A0012A02C /* ChatLoader.xcdatamodeld in Sources */,
 				9CD1E56525D57F3A0012A02C /* SceneDelegate.swift in Sources */,
 			);
