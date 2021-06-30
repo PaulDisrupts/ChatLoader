@@ -7,9 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C29D32B2688BE290058EF3B /* Message+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29D3272688BE290058EF3B /* Message+CoreDataClass.swift */; };
+		9C29D32C2688BE290058EF3B /* Message+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29D3282688BE290058EF3B /* Message+CoreDataProperties.swift */; };
+		9C29D32D2688BE290058EF3B /* Chat+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29D3292688BE290058EF3B /* Chat+CoreDataClass.swift */; };
+		9C29D32E2688BE290058EF3B /* Chat+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29D32A2688BE290058EF3B /* Chat+CoreDataProperties.swift */; };
+		9CC4CFFF25D6BE4100390D79 /* WPZipArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF225D6BE4100390D79 /* WPZipArchive.m */; };
+		9CC4D00025D6BE4100390D79 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF425D6BE4100390D79 /* unzip.c */; };
+		9CC4D00125D6BE4100390D79 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF525D6BE4100390D79 /* zip.c */; };
+		9CC4D00225D6BE4100390D79 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF625D6BE4100390D79 /* ioapi.c */; };
+		9CC4D00325D6BE4100390D79 /* mztools.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF725D6BE4100390D79 /* mztools.c */; };
+		9CC4D00F25D6CC8F00390D79 /* fileProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4D00E25D6CC8F00390D79 /* fileProcessor.swift */; };
 		9CD1E56325D57F3A0012A02C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56225D57F3A0012A02C /* AppDelegate.swift */; };
 		9CD1E56525D57F3A0012A02C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56425D57F3A0012A02C /* SceneDelegate.swift */; };
-		9CD1E56725D57F3A0012A02C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56625D57F3A0012A02C /* ViewController.swift */; };
+		9CD1E56725D57F3A0012A02C /* homeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56625D57F3A0012A02C /* homeViewController.swift */; };
 		9CD1E56A25D57F3A0012A02C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9CD1E56825D57F3A0012A02C /* Main.storyboard */; };
 		9CD1E56D25D57F3A0012A02C /* ChatLoader.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56B25D57F3A0012A02C /* ChatLoader.xcdatamodeld */; };
 		9CD1E56F25D57F3C0012A02C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9CD1E56E25D57F3C0012A02C /* Assets.xcassets */; };
@@ -37,10 +47,28 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9C29D3272688BE290058EF3B /* Message+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+CoreDataClass.swift"; sourceTree = "<group>"; };
+		9C29D3282688BE290058EF3B /* Message+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		9C29D3292688BE290058EF3B /* Chat+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chat+CoreDataClass.swift"; sourceTree = "<group>"; };
+		9C29D32A2688BE290058EF3B /* Chat+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chat+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		9CC4CFF225D6BE4100390D79 /* WPZipArchive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WPZipArchive.m; sourceTree = "<group>"; };
+		9CC4CFF425D6BE4100390D79 /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
+		9CC4CFF525D6BE4100390D79 /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
+		9CC4CFF625D6BE4100390D79 /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
+		9CC4CFF725D6BE4100390D79 /* mztools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mztools.c; sourceTree = "<group>"; };
+		9CC4CFF825D6BE4100390D79 /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
+		9CC4CFF925D6BE4100390D79 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
+		9CC4CFFA25D6BE4100390D79 /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
+		9CC4CFFB25D6BE4100390D79 /* mztools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mztools.h; sourceTree = "<group>"; };
+		9CC4CFFC25D6BE4100390D79 /* ioapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ioapi.h; sourceTree = "<group>"; };
+		9CC4CFFD25D6BE4100390D79 /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
+		9CC4CFFE25D6BE4100390D79 /* WPZipArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WPZipArchive.h; sourceTree = "<group>"; };
+		9CC4D00725D6BEA100390D79 /* ChatLoader-Bridge-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ChatLoader-Bridge-Header.h"; sourceTree = "<group>"; };
+		9CC4D00E25D6CC8F00390D79 /* fileProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fileProcessor.swift; sourceTree = "<group>"; };
 		9CD1E55F25D57F3A0012A02C /* ChatLoader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatLoader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CD1E56225D57F3A0012A02C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9CD1E56425D57F3A0012A02C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		9CD1E56625D57F3A0012A02C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		9CD1E56625D57F3A0012A02C /* homeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = homeViewController.swift; sourceTree = "<group>"; };
 		9CD1E56925D57F3A0012A02C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9CD1E56C25D57F3A0012A02C /* ChatLoader.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ChatLoader.xcdatamodel; sourceTree = "<group>"; };
 		9CD1E56E25D57F3C0012A02C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -80,6 +108,68 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9CC4CFF025D6BC3500390D79 /* 3rd Party */ = {
+			isa = PBXGroup;
+			children = (
+				9CC4CFF125D6BE4100390D79 /* WPZipArchive */,
+			);
+			path = "3rd Party";
+			sourceTree = "<group>";
+		};
+		9CC4CFF125D6BE4100390D79 /* WPZipArchive */ = {
+			isa = PBXGroup;
+			children = (
+				9CC4CFF225D6BE4100390D79 /* WPZipArchive.m */,
+				9CC4CFF325D6BE4100390D79 /* minizip */,
+				9CC4CFFD25D6BE4100390D79 /* Common.h */,
+				9CC4CFFE25D6BE4100390D79 /* WPZipArchive.h */,
+			);
+			path = WPZipArchive;
+			sourceTree = "<group>";
+		};
+		9CC4CFF325D6BE4100390D79 /* minizip */ = {
+			isa = PBXGroup;
+			children = (
+				9CC4CFF425D6BE4100390D79 /* unzip.c */,
+				9CC4CFF525D6BE4100390D79 /* zip.c */,
+				9CC4CFF625D6BE4100390D79 /* ioapi.c */,
+				9CC4CFF725D6BE4100390D79 /* mztools.c */,
+				9CC4CFF825D6BE4100390D79 /* crypt.h */,
+				9CC4CFF925D6BE4100390D79 /* zip.h */,
+				9CC4CFFA25D6BE4100390D79 /* unzip.h */,
+				9CC4CFFB25D6BE4100390D79 /* mztools.h */,
+				9CC4CFFC25D6BE4100390D79 /* ioapi.h */,
+			);
+			path = minizip;
+			sourceTree = "<group>";
+		};
+		9CC4D00825D6CAD700390D79 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				9C29D3292688BE290058EF3B /* Chat+CoreDataClass.swift */,
+				9C29D32A2688BE290058EF3B /* Chat+CoreDataProperties.swift */,
+				9C29D3272688BE290058EF3B /* Message+CoreDataClass.swift */,
+				9C29D3282688BE290058EF3B /* Message+CoreDataProperties.swift */,
+				9CD1E56B25D57F3A0012A02C /* ChatLoader.xcdatamodeld */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		9CC4D00925D6CADD00390D79 /* View */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		9CC4D00A25D6CAE500390D79 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				9CD1E56625D57F3A0012A02C /* homeViewController.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
 		9CD1E55625D57F3A0012A02C = {
 			isa = PBXGroup;
 			children = (
@@ -103,15 +193,18 @@
 		9CD1E56125D57F3A0012A02C /* ChatLoader */ = {
 			isa = PBXGroup;
 			children = (
+				9CC4CFF025D6BC3500390D79 /* 3rd Party */,
 				9CD1E59825D581380012A02C /* Objects */,
+				9CC4D00825D6CAD700390D79 /* Model */,
+				9CC4D00925D6CADD00390D79 /* View */,
+				9CC4D00A25D6CAE500390D79 /* Controller */,
 				9CD1E56225D57F3A0012A02C /* AppDelegate.swift */,
 				9CD1E56425D57F3A0012A02C /* SceneDelegate.swift */,
-				9CD1E56625D57F3A0012A02C /* ViewController.swift */,
 				9CD1E56825D57F3A0012A02C /* Main.storyboard */,
 				9CD1E56E25D57F3C0012A02C /* Assets.xcassets */,
 				9CD1E57025D57F3C0012A02C /* LaunchScreen.storyboard */,
 				9CD1E57325D57F3C0012A02C /* Info.plist */,
-				9CD1E56B25D57F3A0012A02C /* ChatLoader.xcdatamodeld */,
+				9CC4D00725D6BEA100390D79 /* ChatLoader-Bridge-Header.h */,
 			);
 			path = ChatLoader;
 			sourceTree = "<group>";
@@ -138,6 +231,7 @@
 			isa = PBXGroup;
 			children = (
 				9CD1E59925D581590012A02C /* Helper.swift */,
+				9CC4D00E25D6CC8F00390D79 /* fileProcessor.swift */,
 			);
 			path = Objects;
 			sourceTree = "<group>";
@@ -272,11 +366,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9CD1E56725D57F3A0012A02C /* ViewController.swift in Sources */,
+				9CD1E56725D57F3A0012A02C /* homeViewController.swift in Sources */,
+				9CC4D00125D6BE4100390D79 /* zip.c in Sources */,
+				9CC4D00F25D6CC8F00390D79 /* fileProcessor.swift in Sources */,
+				9C29D32B2688BE290058EF3B /* Message+CoreDataClass.swift in Sources */,
+				9CC4D00025D6BE4100390D79 /* unzip.c in Sources */,
 				9CD1E56325D57F3A0012A02C /* AppDelegate.swift in Sources */,
+				9C29D32C2688BE290058EF3B /* Message+CoreDataProperties.swift in Sources */,
+				9CC4D00325D6BE4100390D79 /* mztools.c in Sources */,
 				9CD1E59A25D581590012A02C /* Helper.swift in Sources */,
 				9CD1E56D25D57F3A0012A02C /* ChatLoader.xcdatamodeld in Sources */,
+				9CC4D00225D6BE4100390D79 /* ioapi.c in Sources */,
+				9C29D32D2688BE290058EF3B /* Chat+CoreDataClass.swift in Sources */,
+				9C29D32E2688BE290058EF3B /* Chat+CoreDataProperties.swift in Sources */,
 				9CD1E56525D57F3A0012A02C /* SceneDelegate.swift in Sources */,
+				9CC4CFFF25D6BE4100390D79 /* WPZipArchive.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,6 +565,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.pmw.ChatLoader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ChatLoader/ChatLoader-Bridge-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -480,6 +585,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.pmw.ChatLoader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ChatLoader/ChatLoader-Bridge-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

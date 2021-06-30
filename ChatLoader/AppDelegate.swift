@@ -11,10 +11,60 @@ import CoreData
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    var openWithURL:URL?
+    
+    //ChatLoader is open in background, lauched via 'share' of exported WhatsApp chat
+    func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
+        NSLog("func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {")
+        
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "processFile"), object: self, userInfo:["URLtoProcess":open])
+        
+        return true
+    }
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        //ChatLoader lauched via 'share' of exported WhatsApp chat
+        if let url = launchOptions?[.url] as? URL {
+            self.openWithURL = url
+        }
+        
+        
+        if !UserDefaults.standard.bool(forKey: "hasBeenLaunched") {
+            //first time ChatLoader has been opened, setup user defaults
+            
+            UserDefaults.standard.set(true, forKey: "hasBeenLaunched")
+            
+            UserDefaults.standard.set("0.1", forKey: "versionNumber")
+                        
+            //directories and files
+            UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
+            UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
+        }
+        
+        //create directory structure
+        if let docsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
+            print("library private dir: \(docsDir.path)")
+            
+            //create directory structure
+            let fileManager = FileManager()
+            
+            //"importedChats" directory: each chat has a sub-folder named as chat ID
+            let newDir =  docsDir.appendingPathComponent("ChatLoaderPrivateDocuments/importedChats")
+            
+            if !fileManager.fileExists(atPath: (newDir.path)) {
+                
+                do {
+                    try fileManager.createDirectory(atPath: (newDir.path), withIntermediateDirectories: true, attributes: nil)
+                } catch let error as NSError {
+                    print("ERROR: try fileManager.createDirectoryAtPath(newDir.path!, withIntermediateDirectories: true, attributes: nil): Failed to create dir at \(String(describing: newDir.path)); error: \(error.localizedDescription)")
+                }
+            }
+        }
+        
+        
         return true
     }
 

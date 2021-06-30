@@ -1,24 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Home View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="homeViewController" customModule="ChatLoader" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" xcode11CocoaTouchSystemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ChatLoader" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v7X-D6-F0C">
+                                <rect key="frame" x="20" y="44" width="374" height="32"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="32" id="HaI-RJ-iBy"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total Chats:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NJS-Rt-Ohu">
+                                <rect key="frame" x="20" y="130" width="374" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="PBy-Kg-7S8"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total messages:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ud0-BJ-7No">
+                                <rect key="frame" x="20" y="159" width="374" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="l4g-un-JFB"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last chat load date:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hbp-sl-Zgh">
+                                <rect key="frame" x="20" y="196" width="374" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="Uvp-k3-wSu"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last chat name:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="anb-Rf-MIr">
+                                <rect key="frame" x="20" y="225" width="374" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="Zha-ON-ccz"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Aaz-Yl-dbd">
+                                <rect key="frame" x="20" y="84" width="374" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="2xC-0Y-oWl"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Load chat from file system"/>
+                                <connections>
+                                    <action selector="buttonLoadChatPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZWy-iH-xHU"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last chat # of messages:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7ka-BE-HkY">
+                                <rect key="frame" x="20" y="254" width="374" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="5Kd-5K-Hwy"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Aaz-Yl-dbd" secondAttribute="trailing" constant="20" id="7bE-ee-yqt"/>
+                            <constraint firstItem="ud0-BJ-7No" firstAttribute="top" secondItem="NJS-Rt-Ohu" secondAttribute="bottom" constant="8" id="A7Y-0b-ycd"/>
+                            <constraint firstItem="v7X-D6-F0C" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="DW3-5k-aoa"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="anb-Rf-MIr" secondAttribute="trailing" constant="20" id="G1N-pN-RaT"/>
+                            <constraint firstItem="NJS-Rt-Ohu" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="LSw-xi-w5s"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="NJS-Rt-Ohu" secondAttribute="trailing" constant="20" id="QbG-1e-2Gf"/>
+                            <constraint firstItem="anb-Rf-MIr" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="SOx-60-IN4"/>
+                            <constraint firstItem="anb-Rf-MIr" firstAttribute="top" secondItem="hbp-sl-Zgh" secondAttribute="bottom" constant="8" symbolic="YES" id="SUn-nE-ju2"/>
+                            <constraint firstItem="hbp-sl-Zgh" firstAttribute="top" secondItem="ud0-BJ-7No" secondAttribute="bottom" constant="16" id="T1a-vs-oKc"/>
+                            <constraint firstItem="7ka-BE-HkY" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="UGN-Hj-icz"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="hbp-sl-Zgh" secondAttribute="trailing" constant="20" id="YN9-zO-vmU"/>
+                            <constraint firstItem="7ka-BE-HkY" firstAttribute="top" secondItem="anb-Rf-MIr" secondAttribute="bottom" constant="8" symbolic="YES" id="d8b-Qm-yS7"/>
+                            <constraint firstItem="v7X-D6-F0C" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="e2d-c3-iQ7"/>
+                            <constraint firstItem="Aaz-Yl-dbd" firstAttribute="top" secondItem="v7X-D6-F0C" secondAttribute="bottom" constant="8" symbolic="YES" id="fJF-A8-JPj"/>
+                            <constraint firstItem="hbp-sl-Zgh" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="fhv-Qz-jhl"/>
+                            <constraint firstItem="Aaz-Yl-dbd" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="jKP-bh-6Gg"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="v7X-D6-F0C" secondAttribute="trailing" constant="20" id="kPZ-4O-p6b"/>
+                            <constraint firstItem="ud0-BJ-7No" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="qCl-la-anF"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="7ka-BE-HkY" secondAttribute="trailing" constant="20" id="qWG-If-mBV"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ud0-BJ-7No" secondAttribute="trailing" constant="20" id="x9V-Tl-n4T"/>
+                            <constraint firstItem="NJS-Rt-Ohu" firstAttribute="top" secondItem="Aaz-Yl-dbd" secondAttribute="bottom" constant="16" id="yGf-iQ-XyM"/>
+                        </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="7j3-KK-6zC"/>
+                    <connections>
+                        <outlet property="buttonLoadChat" destination="Aaz-Yl-dbd" id="Kmy-hR-pN4"/>
+                        <outlet property="labelLastChatLoadDate" destination="hbp-sl-Zgh" id="aRo-uu-j0C"/>
+                        <outlet property="labelLastChatMessages" destination="7ka-BE-HkY" id="qXO-nT-AUY"/>
+                        <outlet property="labelLastChatName" destination="anb-Rf-MIr" id="Do6-Ws-CwT"/>
+                        <outlet property="labelTotalChats" destination="NJS-Rt-Ohu" id="KNu-uu-8rt"/>
+                        <outlet property="labelTotalMessages" destination="ud0-BJ-7No" id="hcF-hE-Hqi"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="1018.840579710145" y="37.5"/>
         </scene>
     </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
 </document>
