@@ -436,7 +436,7 @@ class Helper {
                 print("filename: \(fn)")
                 
                 if fn.range(of: ".zip") != nil {
-                    print("found!")
+                    print(".zip file found!")
                     url = inboxDirectoryURL().appendingPathComponent(fn)
                 }
             }

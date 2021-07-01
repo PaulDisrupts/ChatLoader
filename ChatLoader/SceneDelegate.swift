@@ -11,12 +11,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        //ChatLoader in background when invoked by UIActivityViewController/'share' of exported Whatsapp chat .zip file
+       
+        guard let url = URLContexts.first?.url else { return }
+        
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "processFile"), object: self, userInfo:["URLtoProcess":url])
+    }
+    
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let _ = (scene as? UIWindowScene) else { return }
+        
+        
+        //ChatLoader launched via UIActivityViewController/'share' of exported Whatsapp chat .zip file
+        let url = connectionOptions.urlContexts.first?.url
+
+        //get the root controller which will be of type: homeViewController
+        if let vc = self.window?.rootViewController as? homeViewController {
+            if url != nil {
+                vc.openWithURL = url
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

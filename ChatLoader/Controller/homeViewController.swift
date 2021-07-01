@@ -64,12 +64,8 @@ class homeViewController: UIViewController, protocolFileProcessor {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        //check if ChatLoader was opened via sharing
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        openWithURL = appDelegate.openWithURL
-        
-        
-        //ChatLoader lauched via 'share' of exported WhatsApp chat
+        //ChatLoader launched via UIActivityViewController/'share' of exported Whatsapp chat .zip file
+        //openWithURL set in SceneDelegate func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         if openWithURL != nil {
             loadFileFromURL(fileURL: openWithURL!)
         }
@@ -77,27 +73,15 @@ class homeViewController: UIViewController, protocolFileProcessor {
     
     //MARK: Class functions
     func addNotifications() {
-        //ChatLoader is open in background, lauched via 'share' of exported WhatsApp chat
+        //ChatLoader in background when invoked by UIActivityViewController/'share' of exported Whatsapp chat .zip file
         
-        NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "processFile"), object: UIApplication.shared.delegate, queue: OperationQueue.main) { notification in
+        NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "processFile"), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
 
             // get the URL from the NSNotification
             if let url = notification.userInfo?["URLtoProcess"] as? URL {
-                if !self.isLoading {//only process imported file if not already loading a file (eg. large file loading)
-                
-                    self.loadFileFromURL(fileURL: url)
-
-                } else {//if !self.isLoading {
-                    
-                    //user tried to import a file while loading a chat; delete the imported file, let the load complete
-                    do {
-                        try FileManager().removeItem(at: url)
-                    } catch let error as NSError {
-                        print("ERROR: try FileManager().removeItem(at: url)\nFailed to remove file \( url.path));\nError code: \(error.localizedDescription)")
-                    }
-                }
-            }//if let url = notification.userInfo?["URLtoProcess"] as? URL {
-        }//NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "processFile"), object: UIApplication.shared.delegate, queue: OperationQueue.main) {
+                self.loadFileFromURL(fileURL: url)
+            }
+        }
     }
     
     
@@ -121,7 +105,6 @@ class homeViewController: UIViewController, protocolFileProcessor {
             labelLastChatLoadDate.text = "Last chat load date: \(getLastChatDate())"
             labelLastChatName.text = "Last chat name: \(getLastChatName())"
             labelLastChatMessages.text = "Last chat # of messages: \(Helper.app.formatNumber(number: getLastChatMessages())!)"
-
         }
         
         labelTotalChats.text = "Total chats: \(getTotalChats())"
@@ -133,18 +116,14 @@ class homeViewController: UIViewController, protocolFileProcessor {
     func loadFileForSimulator() -> Bool {
         //check directory /ChatLoader for .zip files
         
-        print("Open with URL not found, checking file system...")
-        
         var chatFileFound:Bool = false
         
-        //list files in the documents directory
         let fileManager = FileManager()
         
         if let libraryDir = FileManager().urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
             
             let privateDir = UserDefaults.standard.string(forKey: "appDirectory")!
             let chatLoaderURL = libraryDir.appendingPathComponent("\(privateDir)")
-            print("Searching ChatLoader directory for exported WhatsApp chats (.zip): \(chatLoaderURL.path)")
             
             do {
                 let fileNames = try fileManager.contentsOfDirectory(atPath: chatLoaderURL.path) as [String]?
@@ -159,6 +138,11 @@ class homeViewController: UIViewController, protocolFileProcessor {
                     }
                 }
                 
+                if !chatFileFound {
+                    print("Place the exported whatsapp chat .zip file in directory:")
+                    print(chatLoaderURL)
+                }
+                
             } catch let error as NSError {
                 print("WARNING: func loadFileForSimulator() { no files found! \(error)")
             }
@@ -168,6 +152,7 @@ class homeViewController: UIViewController, protocolFileProcessor {
     }
     
     
+    //update UI when processing a chat
     func showViewDimBG() {
         
         if viewDimBG == nil {
@@ -194,6 +179,7 @@ class homeViewController: UIViewController, protocolFileProcessor {
     }
     
     
+    //update UI when processing a chat completed
     func removeViewDimBG() {
         
         if viewDimBG != nil {
@@ -355,7 +341,6 @@ class homeViewController: UIViewController, protocolFileProcessor {
     func processingComplete(message:String) {
         print("homeViewController: func processingComplete(message:String) {")
     
-        
         if message == "saved" {
             //reset variables
             

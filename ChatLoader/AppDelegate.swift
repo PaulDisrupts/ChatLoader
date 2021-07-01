@@ -10,27 +10,9 @@ import CoreData
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-    var openWithURL:URL?
     
-    //ChatLoader is open in background, lauched via 'share' of exported WhatsApp chat
-    func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
-        NSLog("func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {")
-        
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "processFile"), object: self, userInfo:["URLtoProcess":open])
-        
-        return true
-    }
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        
-        //ChatLoader lauched via 'share' of exported WhatsApp chat
-        if let url = launchOptions?[.url] as? URL {
-            self.openWithURL = url
-        }
-        
         
         if !UserDefaults.standard.bool(forKey: "hasBeenLaunched") {
             //first time ChatLoader has been opened, setup user defaults
@@ -68,6 +50,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
+    
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
