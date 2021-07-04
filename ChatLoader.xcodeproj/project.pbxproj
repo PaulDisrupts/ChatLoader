@@ -11,6 +11,7 @@
 		9C29D32C2688BE290058EF3B /* Message+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29D3282688BE290058EF3B /* Message+CoreDataProperties.swift */; };
 		9C29D32D2688BE290058EF3B /* Chat+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29D3292688BE290058EF3B /* Chat+CoreDataClass.swift */; };
 		9C29D32E2688BE290058EF3B /* Chat+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29D32A2688BE290058EF3B /* Chat+CoreDataProperties.swift */; };
+		9C29D3302691EC100058EF3B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 9C29D32F2691EC100058EF3B /* README.md */; };
 		9CC4CFFF25D6BE4100390D79 /* WPZipArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF225D6BE4100390D79 /* WPZipArchive.m */; };
 		9CC4D00025D6BE4100390D79 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF425D6BE4100390D79 /* unzip.c */; };
 		9CC4D00125D6BE4100390D79 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4CFF525D6BE4100390D79 /* zip.c */; };
@@ -51,6 +52,7 @@
 		9C29D3282688BE290058EF3B /* Message+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		9C29D3292688BE290058EF3B /* Chat+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chat+CoreDataClass.swift"; sourceTree = "<group>"; };
 		9C29D32A2688BE290058EF3B /* Chat+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chat+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		9C29D32F2691EC100058EF3B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9CC4CFF225D6BE4100390D79 /* WPZipArchive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WPZipArchive.m; sourceTree = "<group>"; };
 		9CC4CFF425D6BE4100390D79 /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
 		9CC4CFF525D6BE4100390D79 /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 		9CD1E55625D57F3A0012A02C = {
 			isa = PBXGroup;
 			children = (
+				9C29D32F2691EC100058EF3B /* README.md */,
 				9CD1E56125D57F3A0012A02C /* ChatLoader */,
 				9CD1E57B25D57F3C0012A02C /* ChatLoaderTests */,
 				9CD1E58625D57F3C0012A02C /* ChatLoaderUITests */,
@@ -341,6 +344,7 @@
 			files = (
 				9CD1E57225D57F3C0012A02C /* LaunchScreen.storyboard in Resources */,
 				9CD1E56F25D57F3C0012A02C /* Assets.xcassets in Resources */,
+				9C29D3302691EC100058EF3B /* README.md in Resources */,
 				9CD1E56A25D57F3A0012A02C /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

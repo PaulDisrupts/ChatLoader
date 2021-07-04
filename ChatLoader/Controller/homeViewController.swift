@@ -15,11 +15,12 @@ class homeViewController: UIViewController, protocolFileProcessor {
     
     var isLoading:Bool = false  //used to stop two files being loaded at once
     
-    var viewDimBG:UIView?
-    var progressViewProcessing: UIProgressView?
+    var viewDimBG:UIView?                           //used to update the UI to indicate chat is being processed
+    var progressViewProcessing: UIProgressView?     //show progress of chat being processed
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
     
     //MARK: IBOutlets
     @IBOutlet weak var labelTotalChats: UILabel!
@@ -64,9 +65,10 @@ class homeViewController: UIViewController, protocolFileProcessor {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        //ChatLoader launched via UIActivityViewController/'share' of exported Whatsapp chat .zip file
-        //openWithURL set in SceneDelegate func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         if openWithURL != nil {
+            //ChatLoader launched via UIActivityViewController/'share' of exported Whatsapp chat .zip file
+            //openWithURL set in SceneDelegate func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+            
             loadFileFromURL(fileURL: openWithURL!)
         }
     }

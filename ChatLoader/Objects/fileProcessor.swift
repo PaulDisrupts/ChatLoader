@@ -139,6 +139,7 @@ class fileProcessor:NSObject {
         
         
         //unzip to tempDir
+        //Feel free to use your preferred archiving library here
         WPZipArchive.unzipFile(atPath: inputFileURL!.path, toDestination: tempDirURL!.path)
         
 
