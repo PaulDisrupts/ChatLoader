@@ -35,9 +35,9 @@ Tested on:
 Pull requests are welcome.
 
 ## License
-This project is released under the [MIT](https://choosealicense.com/licenses/mit/) license
+This project is released under the [MIT](https://choosealicense.com/licenses/mit/) license/
 
 ## Acknowledgements
-- WPMedia for creating [WPZipArchive](https://github.com/WPMedia/WPZipArchive). WPZipArchive can be swapped out for any preferred archiving library.
+- WPMedia for creating [WPZipArchive](https://github.com/WPMedia/WPZipArchive) (Note that WPZipArchive can be swapped out for any preferred archiving library).
 
 

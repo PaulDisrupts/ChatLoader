@@ -6,19 +6,15 @@
 //
 
 /*
-    ChatLoader v1.0 verified against WhatsApp v2.21.110.15
-    ******************************************************
- 
- 
+    ChatLoader v1.0 verified against WhatsApp v2.21.90.14
+    
     Exported file notes
     *******************
  
-        * The chat transcript is exported to file "_chat.txt" (UTF8 encoding); archived within exported file
-            "WhatsApp Chat - [chatname].zip" (along with any attachments)
+        * The chat transcript is exported to file "_chat.txt" (UTF8 encoding); archived within exported .zip file:
+            "WhatsApp Chat - [chat_name].zip" (along with any attachments)
         
         * WhatsApp end of message sequence is: \r\n
- 
-        * End of "_chat.txt" file is the character: " " //to be confirmed
         
         * Exported format for 'standard' messages (user sent messages or messages received from another user):
             
@@ -27,29 +23,31 @@
             NOTE:
                 - exported message date format may vary based on localization
                 - exported message timestamp format dependent on 12/24 clock settings
-                - depending on localization settings there may not be a "," between the date and timestamp, ie:
+                - depending on localization settings there may not be a "," between the date and timestamp, i.e.:
                     [date timestamp] sender: message
-                - this file "Helper.swift" uses the notation:
+                - this file "Helper.swift" assumes the notation:
                     [DD/M/YY, HH:mm:ss] sender: message
             
-        * Group chat update message format (ie 'blue, centered' messages):
+        * Chat update message format (i.e. 'blue, centered' messages; or 'off-white, centered' messages from WhatsApp v2.22.19.78):
  
-            a) Triggered by a user action such as: group admin changes "subject", ie group name; group admin changes group icon; group admin changes group description; group admin adds/removes sender; or sender removes themself:
+            a) Triggered by a user action such as: group admin changes "subject", i.e. group name; group admin changes group icon; group admin changes group description; group admin adds/removes sender; sender removes themself; sender changes number:
                 [DD/M/YY, HH:mm:ss] (U+201E)message
-                    (NOTE: message may contain a sender(s), where sender = sender/phone number or "You" if you are the admin/user action taker)
+                    or
+                [DD/M/YY, HH:mm:ss] (U+201E)sender: message
+                    (NOTE: message *may not* have the (U+201E) between the date/time and the sender; or between the date/time and the message)
  
-            b) From the WhatsApp platform *may* have the (U+201E) between the date/time and the group_name ie:
-                [DD/M/YY, HH:mm:ss] (U+201E)group_name: message
+            b) From the WhatsApp platform *may* have the (U+201E) between the date/time and the chat_name i.e.:
+                [DD/M/YY, HH:mm:ss] (U+201E)chat_name: message
                     otherwise it is in the format:
-                [DD/M/YY, HH:mm:ss] group_name: message
-                    (NOTE: messages of both these formats are currently treated as a message from sender with name = 'group_name')
+                [DD/M/YY, HH:mm:ss] chat_name: message
+                    (NOTE: messages of both these formats are currently treated as a message from sender with name = chat_name)
  
-        * 'Broadcast' messages (ie 'yellow, centered' messages; such as the encryted chat notice):
-                [DD/M/YY, HH:mm:ss] (U+201E)chatname: message
-                    (NOTE: messages of this format are currently treated as a message from sender with name = chatname)
-                    
+        * 'Broadcast' messages (i.e. 'yellow, centered' messages; such as the encrypted chat notice):
+                [DD/M/YY, HH:mm:ss] (U+201E)chat_name: message
+                    (NOTE: messages of this format are currently treated as a message from sender with name = chat_name)
+ 
         * Voice/video calls
-                - Missed calls (ie 'blue, centered' messages) in the format:
+                - Missed calls (i.e. 'blue, centered' messages) in the format:
                     [DD/M/YY, HH:mm:ss] sender: (U+201E)message
                         (NOTE: Where messsage = "Missed voice call" or "Missed video call")
  
@@ -80,10 +78,10 @@
              - bold = *bold*
              - italics = _italics_
              - strikethrough = ~strikethrough~
-             - mentions (ie @name) = @phone_number
+             - mentions (i.e. @name) = @phone_number
  
         * Unicode (U+201E) 'Double Low-9 Quotation Mark' is treated as a special character in messages
-            - (U+201E) on its own behaves like a new line character; but two (U+201E)s (such as in attachments) seem to keep the message contents to a single line (ie. (U+201E) is used to act like brackets)
+            - (U+201E) on its own behaves like a new line character; but two (U+201E)s (such as in attachments) seem to keep the message contents to a single line (i.e. (U+201E) is used to act like brackets)
             - (U+201E) prefixes the sender when it is a phone number
             --> The (U+201E) char is addressed by using String/Range<String.Index> for the bounds and the function:
                     .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines
@@ -190,7 +188,7 @@
  
         NOTE:   the "attachment_omitted_message" may differ in a foreign language
         
-        NOTE:   for "attachment_type omitted" there are extraneous prefixed characters ie. (U+201E), so use function:
+        NOTE:   for "attachment_type omitted" there are extraneous prefixed characters i.e. (U+201E), so use function:
                     String.hasSuffix("attachment_type omitted")
                 eg. String attachment_omitted_message = "image omitted" (exported as "(U+201E)image omitted") will result in:
                         attachment_omitted_message.count = 14;
@@ -243,25 +241,30 @@
         Exporting limitations:
         * 'Replies' to messages are *NOT* exported
         * 'Captions' to attachments are *NOT* exported
-        * 'Star' indicators on messages are *NOT* exported
+        * 'Star' indicators on messages (i.e. favourites) are *NOT* exported
+        * 'Reactions' (i.e. emoji responses to a message) are *NOT* exported
         * File size information of 'Document' attachments are *NOT* exported
         * "Forwarded" or "Forwarded many times" indicators on messages are *NOT* exported
+        * Embedded prompts from the WhatsApp platform about "sender changed their phone number to a new number. Tap to message or add the new number" are *NOT* exported
         * Embedded prompts from the WhatsApp platform about "This sender is not in your contacts" are *NOT* exported
         * Embedded prompts from the WhatsApp platform about "You were added by someone who's not in your contacts" are *NOT* exported
-        * 'Unread' messages are exported; "X UNREAD MESSAGES" banners from the WhatsApp platform are *NOT* exported
+        * The "Invite to Group via link" message (i.e message text "Invitation to jon my WhatsApp group") and associated 'group chat attachment' are *NOT* exported; instead a 'blank' message from the sender is exported, ie.:
+            sender:
+        * 'Unread' messages *are* exported; "X UNREAD MESSAGES" banners from the WhatsApp platform are *NOT* exported
         
-            
         Recreating chats limitations:
-        * Group chat update messages (ie 'blue, centered' messages) from the WhatsApp platform are treated as a message from sender with name = 'group_name'
-                (NOTE: if group_name has been changed multiple times, then the message sender may not match the exported chat filename)
+        * Chat update messages (i.e. 'blue, centered'/'off-white, centered' messages) from the WhatsApp platform are treated as a message from either:
+            a) sender = chat_name; or
+            b) sender = sender_name
+            (NOTE: if chat_name (or group name/"subject") has been changed multiple times, then the message sender may not match the exported chat filename)
+ 
+        * 'Broadcast' messages (i.e. 'yellow, centered' messages; such as the encryted chat notice) are treated as a message from sender with name = chat_name
         
-        * 'Broadcast' messages (ie 'yellow, centered' messages; such as the encryted chat notice) are treated as a message from sender with name = chatname
+        * Deleted messages that have been exported are treated as a 'regular' message from the sender (as opposed to an grey italics message with icon and message, eg: "This message was deleted"; "You deleted this message")
         
-        * Deleted messages that have been exported are treated as a message from the sender (as opposed to an grey italics message)
+        * 'Missed call' messages are treated as a message from the sender (as opposed to a 'blue, centered'/'off-white, centered' message)
         
-        * 'Missed call' messages are treated as a message from the sender (as opposed to a 'blue, centered' message)
-        
-        * Automated message "Invitation to join my Whatsapp group" is treated as a status update message (ie 'blue, centered' messages) with the format:
+        * Automated message "Invitation to join my Whatsapp group" is treated as a chat update message (i.e. 'blue, centered' message/'off-white, centered' message) with the format:
             sender:
 
 */
