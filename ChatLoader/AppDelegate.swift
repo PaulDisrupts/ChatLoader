@@ -11,6 +11,17 @@ import CoreData
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
+    //ChatLoader opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
+    func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
+        //**here**
+        NSLog("func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {")
+        
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "processFile"), object: self, userInfo:["URLtoProcess":open])
+        
+        return true
+    }
+    
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         

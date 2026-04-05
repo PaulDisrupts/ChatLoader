@@ -11,12 +11,9 @@ import CoreData
 class homeViewController: UIViewController, protocolFileProcessor {
     
     //MARK: Class variables
-    var openWithURL:URL?  //set by NSNotification .userInfo?["URLtoProcess"]
-    
-    var isLoading:Bool = false  //used to stop two files being loaded at once
-    
-    var viewDimBG:UIView?                           //used to update the UI to indicate chat is being processed
-    var progressViewProcessing: UIProgressView?     //show progress of chat being processed
+    var openWithURL:URL?                //set by NSNotification .userInfo?["URLtoProcess"]
+    var loadingProgress:loadingAlert?   //UI alert to update loading progress
+    var isLoading:Bool = false          //used to stop two files being loaded at once
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -66,7 +63,7 @@ class homeViewController: UIViewController, protocolFileProcessor {
         super.viewDidAppear(animated)
         
         if openWithURL != nil {
-            //ChatLoader launched via UIActivityViewController/'share' of exported Whatsapp chat .zip file
+            //ChatLoader launched via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
             //openWithURL set in SceneDelegate func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
             
             loadFileFromURL(fileURL: openWithURL!)
@@ -75,13 +72,15 @@ class homeViewController: UIViewController, protocolFileProcessor {
     
     //MARK: Class functions
     func addNotifications() {
-        //ChatLoader in background when invoked by UIActivityViewController/'share' of exported Whatsapp chat .zip file
+        //ChatLoader opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "processFile"), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
 
             // get the URL from the NSNotification
             if let url = notification.userInfo?["URLtoProcess"] as? URL {
                 self.loadFileFromURL(fileURL: url)
+                
+                //Remove any modal VCs presented by self/pop to root view controller
             }
         }
     }
@@ -92,8 +91,14 @@ class homeViewController: UIViewController, protocolFileProcessor {
         if !isLoading {
             isLoading = true
             
-            showViewDimBG()
+            //setup UIAlert for loading chat
+            loadingProgress = loadingAlert()
             
+            if let inAppPurchasePrompt = loadingProgress!.setup() {
+                self.present(inAppPurchasePrompt, animated: true)
+            }
+
+            //process the .zip file
             let fp = fileProcessor()
             fp.delegate = self
             fp.processFile(initInputFileURL: fileURL)
@@ -151,53 +156,6 @@ class homeViewController: UIViewController, protocolFileProcessor {
         }
         
         return chatFileFound
-    }
-    
-    
-    //update UI when processing a chat
-    func showViewDimBG() {
-        
-        if viewDimBG == nil {
-        
-            viewDimBG = UIView()
-            viewDimBG?.backgroundColor = UIColor.black
-            viewDimBG?.alpha = 0
-            viewDimBG?.frame = self.view.frame
-                
-            progressViewProcessing = UIProgressView()
-            progressViewProcessing?.setProgress(0, animated: false)
-            self.progressViewProcessing?.frame.size = CGSize(width: self.view.frame.width/2, height: self.view.frame.height/2)
-            self.progressViewProcessing?.center = self.view.center
-                
-            self.view.insertSubview(viewDimBG!, aboveSubview: self.view)
-            self.view.bringSubviewToFront(viewDimBG!)
-            viewDimBG?.addSubview(progressViewProcessing!)
-
-            UIView.animate(withDuration: Helper.app.animationTime, delay: 0, options: [], animations: {
-                    self.viewDimBG?.alpha = Helper.app.alphaDimBG
-                    
-                }, completion: { finished in })
-            }
-    }
-    
-    
-    //update UI when processing a chat completed
-    func removeViewDimBG() {
-        
-        if viewDimBG != nil {
-            
-            UIView.animate(withDuration: Helper.app.animationTime, delay: 0, options: [], animations: {
-                self.viewDimBG?.alpha = 0
-                
-            }, completion: { finished in
-                
-                self.progressViewProcessing?.removeFromSuperview()
-                self.progressViewProcessing = nil
-                
-                self.viewDimBG?.removeFromSuperview()
-                self.viewDimBG = nil
-            })
-        }
     }
     
     
@@ -331,11 +289,8 @@ class homeViewController: UIViewController, protocolFileProcessor {
     //MARK: protocolFileProcessor
     func updateProgress(percentComplete:Int) {
         
-        if progressViewProcessing != nil {
-            print("\(percentComplete)%")
-            DispatchQueue.main.async(execute: {
-                self.progressViewProcessing!.progress = Float(percentComplete)/100
-            })
+        if loadingProgress != nil {
+            loadingProgress!.updateProgresss(progress: percentComplete)
         }
     }
     
@@ -344,14 +299,18 @@ class homeViewController: UIViewController, protocolFileProcessor {
         print("homeViewController: func processingComplete(message:String) {")
     
         if message == "saved" {
-            //reset variables
             
             updateChatStats(recentChat: true)
             
-            openWithURL = nil
+            //reset variables
             isLoading = false
-
-            removeViewDimBG()
+            openWithURL = nil
+            
+            self.dismiss(animated: true, completion: {
+                self.loadingProgress = nil //dismiss loadingProgress:loadingAlert?
+            })
+            
+            
         }
     }
 

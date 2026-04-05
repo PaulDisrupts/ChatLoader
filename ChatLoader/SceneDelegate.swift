@@ -27,7 +27,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let _ = (scene as? UIWindowScene) else { return }
         
         
-        //ChatLoader launched via UIActivityViewController/'share' of exported Whatsapp chat .zip file
+        //ChatLoader launched via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
         let url = connectionOptions.urlContexts.first?.url
 
         //get the root controller which will be of type: homeViewController
