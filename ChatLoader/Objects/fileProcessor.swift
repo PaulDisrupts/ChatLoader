@@ -12,41 +12,38 @@ import UIKit
 import CoreData
 
 protocol protocolFileProcessor {
+    func processingStarted()
     func updateProgress(percentComplete:Int)
-    func processingComplete(message:String)
+    func processingError()
+    func processingSaving()
+    func processingComplete()
 }
 
-/*  ****Happy Path****
- 
-    processFile(initInputFileURL:URL)
-        getchatName()
-        unzipFile()
-        validateFileFromURL()
-            processChatFile(inputFile:[String], dateTimeDelimiter:String)
-                setupchildContext()
-                setupDateFormatters()
-                self.delegate?.promptUserInput(distinctSenders: distinctSendersList)
+/*
+    ***Happy Path***
+    processExportedFile(initInputFileURL:URL)
+        getChatName()
+        unzipExportedFile()
+        validateTextFileFormat()
+            processTextFile(inputFile:[String], dateTimeDelimiter:String)
+                saveContexts()
+                    self.renameDirectory()
+                    self.delegate?.processingComplete(message: "saved")
  */
 
 class fileProcessor:NSObject {
     
     let printToggle:Bool = false
-    
-    let importedChatsDir = "importedChats"
-    let tempDir = "importedChats/tempDir"
-    
-    let whatsappFilePrefix = "WhatsApp Chat - "
-    
+        
     var delegate:protocolFileProcessor?
     
     var childContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.privateQueueConcurrencyType)
     
     var previousMessageID:NSManagedObjectID?  //used for appending subsequent lines to the previous message
     
-    var inputFileURL:URL?       //
-    var importedChatsURL:URL?   //
-    var tempDirURL:URL?
-    var fileToProcessURL:URL?  //the _chat.txt file
+    var inputFileURL:URL?      //the .zip file; note that the filename does not have to be prefixed with Helper.app.whatsappZipFilePrefix, ie. "WhatsApp Chat - "
+    var fileToProcessURL:URL?  //the _chat.txt file; note that the text filename does not have to be "_chat.txt"
+    var tempDirURL:URL?        //temp directory for unzipping exported chats - either deleted if loading chat fails or renamed corresponding to the Chat.chatID
     
     var isSavingCoreData:Bool = false
     
@@ -60,26 +57,30 @@ class fileProcessor:NSObject {
     var groupChatSenderIndex = [String]()    //used to index the senders for group chats
     
 
-    func processFile(initInputFileURL:URL) {
-        
+    //MARK: class functions
+    init(delegate: protocolFileProcessor, inputFile: URL) {
+        super.init( )
+    
         /*
-         1. setup URLs
+         1. setup URLs, delegate
+         //call processExportedFile() from delegate object
          2. get file name
          3. unzip files, find _chat.txt, remove unwanted files
          4. process _chat.txt file
          5. rename directory --> called in func saveContexts() {
- 
          */
         
-        //1. setup URLs
-        inputFileURL = initInputFileURL
-        
-        if let libraryDir = FileManager().urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
-            
-            importedChatsURL = libraryDir.appendingPathComponent(UserDefaults.standard.string(forKey: "appDirectory")!).appendingPathComponent(importedChatsDir)
-            
-            tempDirURL = libraryDir.appendingPathComponent(UserDefaults.standard.string(forKey: "appDirectory")!).appendingPathComponent(tempDir)
-        }
+        //1. setup URLs, delegate
+        self.delegate = delegate
+        self.inputFileURL = inputFile   //always of filetype .zip
+        self.tempDirURL = Helper.app.tempDirURL()
+    }
+    
+    
+    func processExportedFile() {
+        //errorLoadingFile() called when:
+        //a) No .txt file found in the .zip (ie. inputFileURL, which has to be of type .zip); note that the text filename does not have to be "_chat.txt"
+        //b) .txt file is of the wrong format
         
         if printToggle {
             print("\n*****inputFileURL: \(inputFileURL!.path)")
@@ -87,25 +88,49 @@ class fileProcessor:NSObject {
         }
         
         //2. get file name
-        getchatName()
+        getChatName()   //note that the filename does not have to be prefixed with Helper.app.whatsappZipFilePrefix, ie. "WhatsApp Chat - "
+        
+        
+
+ 
+/*
+        var errorMessage: Bool = true
+        
+        if getChatName() {
+            if unzipExportedFile() {
+                if let fileToProcessURL {
+                    if validateTextFileFormat() {
+                        
+                    }
+                
+                }
+            }
+        }
+*/
+        
         
         //3. unzip files, find _chat.txt, remove unwanted files
-        unzipFile()
+        unzipExportedFile()
         
         //4. process _chat.txt
         if fileToProcessURL != nil {
-            validateFileFromURL()
+            validateTextFileFormat()
+        } else {
+            print("fileProcessor.swift/n/tfunc processExportedFile() {/n/tif fileToProcessURL != nil {/n/tERROR:.txt not found!!")
+            errorLoadingFile() //**here**
         }
+        
+        //5. rename directory --> called in func saveContexts() {
     }
 
     
-    func getchatName() {
+    func getChatName() {
         
-        //file type is either .zip or .txt
+        //file type is .zip only
         if inputFileURL!.path.range(of: ".zip") != nil {
             
             if inputFileURL!.path.range(of: "Inbox/") != nil {
-                //file loaded from "Copy to ChatLoader" in UIActivityViewController
+                //file loaded via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
                 chatName = String(inputFileURL!.path[inputFileURL!.path.range(of: "Inbox/")!.upperBound..<inputFileURL!.path.range(of: ".zip")!.lowerBound])
                 
             } else {
@@ -114,7 +139,7 @@ class fileProcessor:NSObject {
             }
         }
         
-        if let range = chatName!.range(of: whatsappFilePrefix) {
+        if let range = chatName!.range(of: Helper.app.whatsappZipFilePrefix) {
             chatName!.removeSubrange(range)
         }
         
@@ -122,7 +147,7 @@ class fileProcessor:NSObject {
     }
     
     
-    func unzipFile() {
+    func unzipExportedFile() {
         
         //create temp dir: importedChats/tempDir
         let fileManager = FileManager()
@@ -172,125 +197,264 @@ class fileProcessor:NSObject {
                     
                     do {
                         try fileManager.removeItem(atPath: tempURL.path)
-                        print("\nfunc unzipFile(): removed file: \(tempURL.lastPathComponent)")
+                        print("\nfunc unzipExportedFile(): removed file: \(tempURL.lastPathComponent)")
                         
                     } catch let error as NSError {
-                        print("ERROR: func unzipFile(); try fileManager.removeItemAtPath(tempURL.path!): \(error.localizedDescription)")
+                        print("ERROR: func unzipExportedFile(); try fileManager.removeItemAtPath(tempURL.path!): \(error.localizedDescription)")
                     }
                 }
             }//for f in unzippedFiles! {
             
         } catch let error as NSError {
-            print("ERROR: func unzipFile(); let unzippedFiles = try fileManager.contentsOfDirectoryAtPath(inboxDir.path!) as [String]!: \(error)")
+            print("ERROR: func unzipExportedFile(); let unzippedFiles = try fileManager.contentsOfDirectoryAtPath(inboxDir.path!) as [String]!: \(error)")
         }
     }
     
     
-    //process files (both 12/24hr) in the users current locale
-    func validateFileFromURL() {
+    //Validate _chat.txt file format based on first line/message and determine the indexDateTime delimiter
+    func validateTextFileFormat() {
         
-        var processed = false
+        var validFileFormat = false
         
         // **ASSUMPTION**: WhatsApp message end of message sequence is: \r\n
         if let mytext = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n") {
-            
 
-            //validate file formatting
-            if mytext.first?.first == "[" {
-
-                //validate the message formatting in the file
-                if let inputLine = mytext.first {
+            /*
+             Expected message format depending on localization settings:
+             
+             [DD/M/YY, HH:mm:ss] sender: message\r\n
+                or
+             [DD/M/YY HH:mm:ss] sender: message\r\n
+             
+             Process the first line to validate the message formatting in the imported file; check the expected delimiters are in sequence:
+              1) "["           --> indexDate; first char of the timestamp
+              2) ", " or " "   --> indexDateTime; delimiter between date and time
+              3) "] "          --> indexTimeSender; delimiter between timestamp and sender
+              4) ": "          --> indexSenderMessage; delimiter between sender and message
+             */
+            if let inputLine = mytext.first {
+                if let indexDate = inputLine.range(of: "[") { //1) "[" --> indexDate; first char of the timestamp
                     
-                    //[DD/M/YY, HH:mm:ss] sender: message
-                    //2018 file format, 2 senders
-                    if let indexDateTime = inputLine.range(of: ", "){
-                        if let indexTimeSender = inputLine.range(of: "] ") {
-                            if indexDateTime.upperBound<indexTimeSender.lowerBound {
-                                
-                                if let indexSenderMessage = inputLine.range(of: ": ") {
-                                    if indexTimeSender.upperBound<indexSenderMessage.lowerBound {
-                                        
-                                        print("processFile2018(inputFile: mytext)")
-                                        processed = true
-                                        processChatFile(inputFile: mytext, dateTimeDelimiter: ", ")
-                                    }
-                                    
-                                } else if let indexTimestampMessage = inputLine.range(of: " ", options: [], range: indexTimeSender.upperBound..<inputLine.endIndex, locale: nil) {
-                                    //2018 file format, 2+ senders (ie group chat); or encryption message
-                                    
-                                    if indexTimeSender.upperBound<indexTimestampMessage.lowerBound {
-                                        
-                                        print("group chat: processFile2018(inputFile: mytext)")
-                                        processed = true
-                                        processChatFile(inputFile: mytext, dateTimeDelimiter: ", ")
-                                    }
-                                }
-                            }//if indexDateTime.upperBound<indexTimeSender.lowerBound {
-                        }//if let indexTimeSender = inputLine.range(of: "] ") {
-                    }//if let indexDateTime = inputLine.range(of: ", "){
+                    /*
+                     determine the delimiter between the date and time, ie. ", " or " " depending on the localization
+                     
+                     Edge case: First line/message in format:
+                        [DD/M/YY HH:mm:ss] sender: "message_content_contains_', '_delimiter"\r\n
+                            --> will trigger errorLoadingFile() because: (validFileFormat = false) && (indexDateTime > indexTimeSender)
+                    */
                     
+                    var indexDateTime:Range<String.Index>?
+                    var dateTimeDelimiter:String = ", "
                     
-                    //[DD/M/YY HH:mm:ss] sender: message
-                    //2018 alternate file format, 2 senders
-                    if !processed {
-                        if let indexDateTime = inputLine.range(of: " "){
-                            if let indexTimeSender = inputLine.range(of: "] ") {
-                                if indexDateTime.upperBound<indexTimeSender.lowerBound {
+                    indexDateTime = inputLine.range(of: dateTimeDelimiter) //2) ", "  --> indexDateTime; delimiter between date and time
+                    
+                    if indexDateTime == nil {
+                        indexDateTime = inputLine.range(of: " ") //2) " "  --> indexDateTime; delimiter between date and time
+                        dateTimeDelimiter = " "
+                    }
+                    
+                    if indexDateTime != nil {
+                        if indexDate.upperBound<indexDateTime!.lowerBound {
+                            
+                            if let indexTimeSender = inputLine.range(of: "] ") { //3) "] " --> indexTimeSender; delimiter between timestamp and sender
+                                if indexDateTime!.upperBound<indexTimeSender.lowerBound {
                                     
-                                    if let indexSenderMessage = inputLine.range(of: ": ") {
+                                    if let indexSenderMessage = inputLine.range(of: ": ") { //4) ": " --> indexSenderMessage; delimiter between sender and message
                                         if indexTimeSender.upperBound<indexSenderMessage.lowerBound {
+                                            //at least one message in valid format, process the text file
                                             
-                                            print("processFile2018_alternateDateFormat(inputFile: mytext)")
-                                            processed = true
-                                            processChatFile(inputFile: mytext, dateTimeDelimiter: " ")
+                                            print("processTextFile(inputFile: mytext, dateTimeDelimiter: \(dateTimeDelimiter)")
+                                            validFileFormat = true
+                                            processTextFile(inputFile: mytext, dateTimeDelimiter: dateTimeDelimiter)
                                         }
-                                        
-                                    } else if let indexTimestampMessage = inputLine.range(of: " ", options: [], range: indexTimeSender.upperBound..<inputLine.endIndex, locale: nil) {
-                                        //2018 alternate file format, 2+ senders (ie group chat); or encryption message
-                                        
-                                        if indexTimeSender.upperBound<indexTimestampMessage.lowerBound {
-                                            
-                                            print("group chat: processFile2018_alternateDateFormat(inputFile: mytext)")
-                                            processed = true
-                                            processChatFile(inputFile: mytext, dateTimeDelimiter: " ")
-                                        }
-                                    }
-                                }//if indexDateTime.upperBound<indexTimeSender.lowerBound {
+                                    }//if let indexSenderMessage = inputLine.range(of: ": ") {
+                                }//if indexDateTime!.upperBound<indexTimeSender.lowerBound {
                             }//if let indexTimeSender = inputLine.range(of: "] ") {
-                        }//if let indexDateTime = inputLine.range(of: " "){
-                    }//if !processed {
-                }//if let inputLine = mytext.first {
-            }//if mytext.first?.first == "[" {
+                        }//if indexDate.upperBound<indexDateTime!.lowerBound {
+                    }//if indexDatetime != nil {
+                }//if let indexDate = inputLine.range(of: "["){
+            }//if let inputLine = mytext.first {
         }//if let mytext = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n") {
         
-        //file format of fileToLoad! not recognised
-        if !processed {
+        //.txt file format of fileToProcessURL! not valid format
+        if !validFileFormat {
+            print("fileProcessor.swift/n/tfunc validateTextFileFormat() {/n/tif !validFileFormat {/n/tERROR: .txt invalid format!!")
             errorLoadingFile()
         }
     }
-    
-    
-    func renameDirectory() {
-        
-        //rename folder then delete .zip file
-        let fileManager = FileManager()
-        
-        do {
-            
-            deleteFiles(zipAndDirectory: false)
-            
-            let directoryIndex = UserDefaults.standard.integer(forKey: "totalFilesLoaded") + 1
-            let directoryName = Helper.app.formatChatIDToDirectoryName(chatID: directoryIndex)
-            try fileManager.moveItem(at: tempDirURL!, to: importedChatsURL!.appendingPathComponent(String(directoryName)))
-            
-            //update UserDefaults
-            UserDefaults.standard.set(directoryIndex, forKey: "totalFilesLoaded")
-            UserDefaults.standard.synchronize()
-            
 
-        } catch let error as NSError {
-            print("ERROR: try fileManager.moveItem(at: tempDirURL!, to: importedChatsURL!.appendingPathComponent(String(directoryName)))\nFailed to rename dir at \(String(describing: tempDirURL!.path));\nError code: \(error.localizedDescription)")
+    
+    func processTextFile(inputFile:[String], dateTimeDelimiter:String) {
+        //file _chat.txt has been found and the first line is the correct format
+        
+        //CoreData
+        setupchildContext()
+        
+        setupDateFormatters()
+        
+        //add chat to the temporary managed object context
+        selectedChat = Chat(entity: NSEntityDescription.entity(forEntityName: "Chat", in: childContext)!, insertInto: childContext) as Chat
+        
+        selectedChat!.chatName = chatName!
+        selectedChat!.dateLoad = NSDate()
+        
+        selectedChat!.chatID = Int16(UserDefaults.standard.integer(forKey: "totalFilesLoaded") + 1) // chatID updated in func saveContexts()
+        
+        
+        /*
+         WhatsApp line format:
+         [DD/M/YY, HH:mm:ss] sender: message
+         
+         or alternate language format:
+         [DD/M/YY HH:mm:ss] sender: message
+         */
+
+        let lineCount = inputFile.count     //number of messages = (lineCount-1) because of the 'end of file' char/line
+        var distinctSenders = Set<String>()
+        var i = 0                           //message count from 0 to (lineCount-2); 'end of file' char/line not counted
+        
+        var onePercent:Int = 1
+        if lineCount > 100 {
+            onePercent = Int(round(Double(lineCount/100)))
         }
+        
+        //process file in background
+        self.delegate?.processingStarted()
+        DispatchQueue.global(qos: .background).async(execute: {
+            
+            //process the file line by line
+            NSLog("**START: process file - # of lines = \(inputFile.count)")
+            for inputLine in inputFile {
+                
+                if i == (lineCount-1) {
+                    print("******last line: i = (lineCount-1), #\(i): \(inputLine)")
+                }
+                
+                if i == lineCount {
+                    print("******should not trigger: i = lineCount, #\(i): \(inputLine)")
+                }
+                
+                if i%onePercent == 0  {
+                    self.updateLoadProgress(i, totalLines: lineCount)
+                }
+                
+                //process input line
+                //[DD/M/YY, HH:mm:ss] sender: message
+                if let indexDateTime = inputLine.range(of: dateTimeDelimiter){
+                    if let indexTimeSender = inputLine.range(of: "] ") {
+                        if indexDateTime.upperBound<indexTimeSender.lowerBound {
+                            
+                            // localeDateFormatter tuple return (optimised)
+                            let dateTuple2 = self.convertDateLocale_WhatsApp(String(inputLine[inputLine.index(after: inputLine.startIndex)..<indexDateTime.lowerBound]))
+                            
+                            if dateTuple2.yyyyMMdd! == "f" {
+                                //inputLine is not in the expected timestamp format, append to previous message
+                                self.appendMessage(inputLine)
+                                
+                            } else {
+                                //inputLine has passed file format validation, create message object; NOTE: at least one message will be processed as .txt file format validated in validateTextFileFormat()
+                                
+                                let message = Message(entity: NSEntityDescription.entity(forEntityName: "Message", in: self.childContext)!, insertInto: self.childContext) as Message
+                                
+                                self.previousMessageID = message.objectID
+                                
+                                //populate message details
+                                message.fromChat = self.selectedChat!
+                                message.messageID = Int64(i)
+                                
+                                message.timeSend = String(inputLine[indexDateTime.upperBound..<indexTimeSender.lowerBound])
+                                
+                                message.dateSend = dateTuple2.yyyyMMdd!
+                                message.dd = Int16(dateTuple2.dd!)
+                                message.mm = Int16(dateTuple2.MM!)
+                                message.yyyy = Int16(dateTuple2.yyyy!)
+                                
+                                message.outgoing = false
+                                
+                                
+                                //process message contents
+                                if let indexSenderMessage = inputLine.range(of: ": ", options: [], range: indexTimeSender.upperBound..<inputLine.endIndex, locale: nil) {
+                                    
+                                    message.sender = String(inputLine[indexTimeSender.upperBound..<indexSenderMessage.lowerBound])
+                                    
+                                    distinctSenders.insert(message.sender!)
+                                    
+                                    message.messageContent = inputLine[indexSenderMessage.upperBound..<inputLine.endIndex].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                                    
+                                    //use this line to capture the attachment types; comment out to improve performance
+                                    message.attachmentType = self.getMessageAttachmentType(messageText: message.messageContent!)
+                                    
+                                } else {
+                                    //cannot distinguish between sender and message; assume that it is a group status update; note: this will be set as outgoing = false
+                                    
+                                    message.sender = Helper.app.groupMessageSender
+                                    message.messageContent = inputLine[indexTimeSender.upperBound..<inputLine.endIndex].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                                }
+                                
+                                message.senderColour = Int16(self.getGroupSenderIndex(message.sender!))
+                                
+                                i += 1 // only increment on messages and not on lines
+                            }
+                            
+                        } else { //if indexDateTime.upperBound<indexTimeSender.lowerBound {
+                            //inputLine is not in the expected timestamp format, append to previous message
+                            self.appendMessage(inputLine)
+                        }
+                        
+                    } else { //if let indexTimeSender = inputLine.range(of: "] ") {
+                        //inputLine is not in the expected timestamp format, append to previous message
+                        self.appendMessage(inputLine)
+                    }
+                    
+                } else { //if let indexDateTime = inputLine.range(of: dateTimeDelimiter){
+                    
+                    //append to previous message if it is *not* end of file
+                    //ie last line ('end of file' char) is when: i = (lineCount-1)
+                    if (i+1 != lineCount) {
+                        self.appendMessage(inputLine)
+                        print("**line #\(i) appended")
+                    }
+                }
+                            
+            } //for inputLine in inputFile {
+            
+            NSLog("**END: process file")
+            
+            //update chat
+            if self.previousMessageID != nil {
+                //loading file complete, at least one message processed as .txt file format validated in validateTextFileFormat()
+                
+                //update chat count and senders
+                self.selectedChat!.senderCount = Int16(distinctSenders.count)
+                
+                var distinctSendersList:String = ""
+                for senderName in distinctSenders {
+                    distinctSendersList = distinctSendersList + "\(senderName)\n"
+                }
+                
+                distinctSendersList = String(distinctSendersList.dropLast(1))   //remove the last \n character
+                self.selectedChat!.senderList = distinctSendersList
+                
+                if self.printToggle {
+                    print("fileProcessor_distinctSendersList:\n\(distinctSendersList)")
+                }
+                
+                
+                //update the UI on main queue
+                DispatchQueue.main.async(execute: {
+                    
+                    //finished processing, save to coredata in parent VC
+                    self.delegate?.processingSaving()
+                    self.saveContexts()
+                })
+                
+            } else {//if self.previousMessageID != nil {
+                //no messages processed (wrong file format?), delete file; note the section should not execute as .txt file format is validated in validateTextFileFormat()
+                print("fileProcessor.swift/n/tfunc processTextFile(inputFile:[String], dateTimeDelimiter:String) {/n/t} else {//if self.previousMessageID != nil {/n/tERROR: No messages processed")
+                self.errorLoadingFile()
+            }
+            
+        }) // DispatchQueue.global(qos: .background).async(execute: {
     }
     
     
@@ -382,7 +546,7 @@ class fileProcessor:NSObject {
             
         } else {
             //valid message not yet found (first line of the file); 'break' is no longer called and the rest of file still will be processed (eg. prefixed lines/incorrectly formatted text)
-            //errorLoadingFile() is now called *after* the entire file is processed
+            //errorLoadingFile() is called *after* the entire file is processed
         }
     }
     
@@ -399,24 +563,145 @@ class fileProcessor:NSObject {
     }
     
     
+    func getMessageAttachmentType(messageText:String) -> Int16 {
+        /*
+         Exported with "Attach media":
+         attachmentType File type      Extension   ‘Filename code’  Preview image
+         0              Text            n/a        n/a              n/a - message text
+         1              Contact        .vcf        n/a              "iconContactCard 144.png"
+         2              Locations       n/a        n/a              n/a - message text of "Location" format
+         3              Image          .jpg        PHOTO            .jpg or "iconImage 144.png"
+         4              GIF            .mp4        GIF              .jpg (generated thumbnail) or "iconGIF 144.png"
+         5              Video          .mp4/.mov   VIDEO            .jpg (generated thumbnail) or "iconVideo 144.png"
+         6              Voice message  .opus       AUDIO            "iconAudio 144.png"
+         7              Document       multiple    n/a              "iconDocument 144.png"
+         8              Sticker        .webp       STICKER          .webp or "iconImage 144.png"
+         
+         Exported with "Without media":
+         attachmentType File type      Message text            Preview image
+         101            Contact        Contact card omitted    "iconContactCard 144.png"
+         102            Locations      n/a                     n/a - message text of "Location" format
+         103            Image          image omitted           "iconImage 144.png"
+         104            GIF            GIF omitted             "iconGIF 144.png"
+         105            Video          video omitted           "iconVideo 144.png"
+         106            Voice message  audio omitted           "iconAudio 144.png"
+         107            Document       document omitted        "iconDocument 144.png"
+         108            Sticker        sticker omitted         "iconImage 144.png"
+         */
+        
+        var attachmentType:Int16 = 0
+        
+        if messageText.hasSuffix(".vcf>") {
+            //contact
+            attachmentType = 1
+            
+        } else if messageText.hasSuffix(".jpg>") || messageText.hasSuffix(".png>"){
+            //image
+            attachmentType = 3
+            
+        } else if messageText.hasSuffix(".mp4>") {
+            //GIF or video
+            
+            if messageText.range(of: "GIF") != nil {
+                //GIF
+                attachmentType = 4
+            } else {
+                //video
+                attachmentType = 5
+            }
+            
+        } else if messageText.hasSuffix(".mov") {
+            //video
+            attachmentType = 5
+            
+        } else if messageText.hasSuffix(".opus>") {
+            //voice message
+            attachmentType = 6
+            
+        } else if messageText.hasSuffix(".pdf>") || messageText.hasSuffix(".doc>") {
+            //document
+            attachmentType = 7
+            
+        } else if messageText.hasSuffix(".webp>") {
+            //sticker
+            attachmentType = 8
+            
+        } else if messageText.hasSuffix("rd omitted") {
+            //contact
+            attachmentType = 101
+        } else if messageText.hasSuffix("ge omitted") {
+            //image
+            attachmentType = 103
+            
+        } else if messageText.hasSuffix("IF omitted") {
+            //gif
+            attachmentType = 104
+            
+        } else if messageText.hasSuffix("eo omitted") {
+            //video
+            attachmentType = 105
+            
+        } else if messageText.hasSuffix("io omitted") {
+            //audio
+            attachmentType = 106
+            
+        } else if messageText.hasSuffix("nt omitted") {
+            //document
+            attachmentType = 107
+            
+        } else if messageText.hasSuffix("er omitted") {
+            //sticker
+            attachmentType = 108
+        }
+        
+
+        return attachmentType
+    }
+    
+    
+    func renameDirectory() {
+        
+        //rename folder then delete .zip file
+        let fileManager = FileManager()
+        
+        do {
+            
+            deleteFiles(tempDirectory: false)
+            
+            let directoryIndex = UserDefaults.standard.integer(forKey: "totalFilesLoaded") + 1
+            let directoryName = Helper.app.formatChatIDToDirectoryName(chatID: directoryIndex)
+            
+            try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(String(directoryName)))
+            
+            //update UserDefaults
+            UserDefaults.standard.set(directoryIndex, forKey: "totalFilesLoaded")
+            UserDefaults.standard.synchronize()
+            
+
+        } catch let error as NSError {
+            print("ERROR: try fileManager.moveItem(at: tempDirURL!, to: importedChatsURL!.appendingPathComponent(String(directoryName)))\nFailed to rename dir at \(String(describing: tempDirURL!.path));\nError code: \(error.localizedDescription)")
+        }
+    }
+
+    
     func errorLoadingFile() {
         print("func errorLoadingFile()")
         
-        deleteFiles(zipAndDirectory: true)
+        deleteFiles(tempDirectory: true)
         
         DispatchQueue.main.async(execute: {
-            self.delegate?.processingComplete(message: "error loading file")
+            self.delegate?.processingError()
         })
     }
     
     
-    func deleteFiles(zipAndDirectory:Bool) {
+    func deleteFiles(tempDirectory:Bool) {
         
         let fileManager = FileManager()
         
-        if zipAndDirectory {
+        if tempDirectory {
+            //delete temp directory and contents, ie error loading file
             
-            //delete temp directory and contents
             do {
                 try fileManager.removeItem(at: tempDirURL!)
                 
@@ -425,22 +710,22 @@ class fileProcessor:NSObject {
             }
         
         } else {
-            //remove the _chat.txt file only
+            //remove the _chat.txt file only, ie chat loaded successfully
             
             do {
                 try fileManager.removeItem(atPath: fileToProcessURL!.path)
                 
                 if printToggle {
-                    print("func deleteFiles(zipAndDirectory:Bool): removed file at: \(fileToProcessURL!.path)")
+                    print("func deleteFiles(tempDirectory:Bool): removed file at: \(fileToProcessURL!.path)")
                 }
                 
             } catch let error as NSError {
-                print("ERROR: func deleteFiles(zipAndDirectory:Bool); try fileManager.removeItemAtPath(fileToProcessURL!.path!): \(error.localizedDescription)")
+                print("ERROR: func deleteFiles(tempDirectory:Bool); try fileManager.removeItemAtPath(fileToProcessURL!.path!): \(error.localizedDescription)")
             }
         }
         
         
-        //remove the imported .zip file if it is *not* the simulator, ie from the devices 'Inbox'
+        //remove the imported .zip file if it is *not* the simulator, ie from the device's 'Inbox'
         #if !targetEnvironment(simulator)
 //            print("#if !targetEnvironment(simulator)")
         
@@ -455,183 +740,6 @@ class fileProcessor:NSObject {
     }
     
 
-    func processChatFile(inputFile:[String], dateTimeDelimiter:String) {
-        //file _chat.txt has been found
-        
-        //CoreData
-        setupchildContext()
-        
-        setupDateFormatters()
-        
-        //add chat to the temporary managed object context
-        selectedChat = Chat(entity: NSEntityDescription.entity(forEntityName: "Chat", in: childContext)!, insertInto: childContext) as Chat
-        
-        selectedChat!.chatName = chatName!
-        selectedChat!.dateLoad = NSDate()
-        
-        selectedChat!.chatID = Int16(UserDefaults.standard.integer(forKey: "totalFilesLoaded") + 1) // chatID updated in func saveContexts()
-        
-        
-        /*
-         WhatsApp line format:
-         [DD/M/YY, HH:mm:ss] sender: message
-         
-         or alternate language format:
-         [DD/M/YY HH:mm:ss] sender: message
-         */
-
-        let lineCount = inputFile.count     //number of messages = (lineCount-1) because of the 'end of file' char/line
-        var distinctSenders = Set<String>()
-        var i = 0                           //message count from 0 to (lineCount-2); 'end of file' char/line not counted
-        var attachmentCount:Int = 0
-        
-        var onePercent:Int = 1
-        if lineCount > 100 {
-            onePercent = Int(round(Double(lineCount/100)))
-        }
-        
-        //process file in background
-        DispatchQueue.global(qos: .background).async(execute: {
-            
-            //process the file line by line
-            NSLog("**START: process file - # of lines = \(inputFile.count)")
-            for inputLine in inputFile {
-                
-                if i == (lineCount-1) {
-                    print("******last line: i = (lineCount-1), #\(i): \(inputLine)")
-                }
-                
-                if i == lineCount {
-                    print("******should not trigger: i = lineCount, #\(i): \(inputLine)")
-                }
-                
-                if i%onePercent == 0  {
-                    self.updateLoadProgress(i, totalLines: lineCount)
-                }
-                
-                //process input line
-                //[DD/M/YY, HH:mm:ss] sender: message
-                if let indexDateTime = inputLine.range(of: dateTimeDelimiter){
-                    if let indexTimeSender = inputLine.range(of: "] ") {
-                        if indexDateTime.upperBound<indexTimeSender.lowerBound {
-                            
-                            // localeDateFormatter tuple return (optimised)
-                            let dateTuple2 = self.convertDateLocale_WhatsApp(String(inputLine[inputLine.index(after: inputLine.startIndex)..<indexDateTime.lowerBound]))
-                            
-                            //unrecognised date format; append to previous message
-                            if dateTuple2.yyyyMMdd! == "f" {
-                                
-                                self.appendMessage(inputLine)
-                                
-                            } else {
-                                //line has passed format validation, create message object
-                                
-                                let message = Message(entity: NSEntityDescription.entity(forEntityName: "Message", in: self.childContext)!, insertInto: self.childContext) as Message
-                                
-                                self.previousMessageID = message.objectID
-                                
-                                //populate message details
-                                message.fromChat = self.selectedChat!
-                                message.messageID = Int64(i)
-                                
-                                message.timeSend = String(inputLine[indexDateTime.upperBound..<indexTimeSender.lowerBound])
-                                
-                                message.dateSend = dateTuple2.yyyyMMdd!
-                                message.dd = Int16(dateTuple2.dd!)
-                                message.mm = Int16(dateTuple2.MM!)
-                                message.yyyy = Int16(dateTuple2.yyyy!)
-                                
-                                message.outgoing = false
-                                
-                                
-                                //process message contents
-                                if let indexSenderMessage = inputLine.range(of: ": ", options: [], range: indexTimeSender.upperBound..<inputLine.endIndex, locale: nil) {
-                                    
-                                    message.sender = String(inputLine[indexTimeSender.upperBound..<indexSenderMessage.lowerBound])
-                                    
-                                    distinctSenders.insert(message.sender!)
-                                    
-                                    message.messageContent = inputLine[indexSenderMessage.upperBound..<inputLine.endIndex].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-                                    
-                                    if message.messageContent!.hasSuffix("omitted") {
-                                        attachmentCount += 1
-                                    }
-                                    
-                                } else {
-                                    //cannot distinguish between sender and message; assume that it is a group status update; note: this will be set as outgoing = false
-                                    
-                                    message.sender = "group_status_update"
-                                    message.messageContent = inputLine[indexTimeSender.upperBound..<inputLine.endIndex].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-                                }
-                                
-                                message.senderColour = Int16(self.getGroupSenderIndex(message.sender!))
-                                
-                                i += 1 // only increment on messages and not on lines
-                            }
-                            
-                        } else { //if indexDateTime.endIndex<indexTimeSender.startIndex {
-                            self.appendMessage(inputLine)
-                            //                                print("if indexDateTime.endIndex<indexTimeSender.startIndex {: \(inputLine)")
-                        }
-                        
-                    } else { //if let indexTimeSender = inputLine.range(of: "] ") {
-                        //append to previous message
-                        self.appendMessage(inputLine)
-                        //                            print("if let indexTimeSender = inputLine.rangeOfString(: \(inputLine)")
-                    }
-                    
-                } else { //if let indexDateTime = inputLine.range(of: dateTimeDelimiter){
-                    
-                    //append to previous message if it is *not* end of file
-                    //ie last line ('end of file' char) is when: i = (lineCount-1)
-                    if (i+1 != lineCount) {
-                        self.appendMessage(inputLine)
-                        print("**line #\(i) appended")
-                    }
-                }
-                            
-            } //for inputLine in inputFile {
-            
-            NSLog("**END: process file")
-            
-            //update chat
-            if self.previousMessageID != nil {
-                //loading file complete, at least one message processed
-                
-                //update chat count and senders
-                self.selectedChat!.senderCount = Int16(distinctSenders.count)
-                
-                var distinctSendersList:String = ""
-                for senderName in distinctSenders {
-                    distinctSendersList = distinctSendersList + "\(senderName)\n"
-                }
-                
-                distinctSendersList = String(distinctSendersList.dropLast(1))   //remove the last \n character
-                self.selectedChat!.senderList = distinctSendersList
-                
-                if self.printToggle {
-                    print("fileProcessor_distinctSendersList:\n\(distinctSendersList)")
-                }
-                
-                
-                //update the UI on main queue
-                DispatchQueue.main.async(execute: {
-                    
-                    //finished processing, save to coredata in parent VC
-                    self.delegate?.processingComplete(message: "saving")
-                    self.saveContexts()
-                })
-                
-            } else {//if self.previousMessageID != nil {
-                //no messages processed (wrong file format?), delete file
-                print("} else {//if self.previousMessageID != nil {")
-                self.errorLoadingFile()
-            }
-            
-        }) //dispatch_async(dispatch_get_global_queue(qos, 0), {; //process file in background
-    }
-    
-    
     //MARK: CoreData
     func setupchildContext() {
         childContext.parent = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -657,7 +765,7 @@ class fileProcessor:NSObject {
                         self.renameDirectory()
                         
                         DispatchQueue.main.async(execute: {
-                            self.delegate?.processingComplete(message: "saved")
+                            self.delegate?.processingComplete()
                         })
                         
                     } catch let error as NSError {
@@ -669,11 +777,6 @@ class fileProcessor:NSObject {
                 print("ERROR: templateModalPopoverViewController; func saveContexts(); try childContext.save(): \(error)")
             }
         }
-    }
-    
-    
-    func finishSaving() {
-        print("func finishSaving () {")
     }
     
 }

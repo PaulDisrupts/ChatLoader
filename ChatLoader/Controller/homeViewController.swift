@@ -11,9 +11,10 @@ import CoreData
 class homeViewController: UIViewController, protocolFileProcessor {
     
     //MARK: Class variables
-    var openWithURL:URL?                //set by NSNotification .userInfo?["URLtoProcess"]
-    var loadingProgress:loadingAlert?   //UI alert to update loading progress
-    var isLoading:Bool = false          //used to stop two files being loaded at once
+    var openWithURL:URL?                    //set by NSNotification .userInfo?["URLtoProcess"]
+    var isLoading:Bool = false              //used to stop two files being loaded at once
+    var loadingProgress:chatLoadingAlert?   //object (with UIAlertController) to update loading progress
+    var fp:fileProcessor?
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -68,13 +69,16 @@ class homeViewController: UIViewController, protocolFileProcessor {
             
             loadFileFromURL(fileURL: openWithURL!)
         }
+        
+        Helper.app.testPrintURLs()
     }
+    
     
     //MARK: Class functions
     func addNotifications() {
         //ChatLoader opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
         
-        NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "processFile"), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
+        NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
 
             // get the URL from the NSNotification
             if let url = notification.userInfo?["URLtoProcess"] as? URL {
@@ -91,17 +95,9 @@ class homeViewController: UIViewController, protocolFileProcessor {
         if !isLoading {
             isLoading = true
             
-            //setup UIAlert for loading chat
-            loadingProgress = loadingAlert()
-            
-            if let inAppPurchasePrompt = loadingProgress!.setup() {
-                self.present(inAppPurchasePrompt, animated: true)
-            }
-
             //process the .zip file
-            let fp = fileProcessor()
-            fp.delegate = self
-            fp.processFile(initInputFileURL: fileURL)
+            fp = fileProcessor(delegate: self, inputFile: fileURL)
+            fp!.processExportedFile()
         }
     }
     
@@ -286,33 +282,72 @@ class homeViewController: UIViewController, protocolFileProcessor {
     }
     
     
-    //MARK: protocolFileProcessor
-    func updateProgress(percentComplete:Int) {
+    func printAttachmentTypes() {
+        let fetchRequest:NSFetchRequest = Message.fetchRequest()
         
+        
+    }
+    
+    
+    //MARK: protocolFileProcessor
+    func processingStarted() {
+        //loadingProgress:chatLoadingAlert? to show progress of loading chat
+        loadingProgress = chatLoadingAlert()
+        
+        //UIAlertController (from loadingProgress:chatLoadingAlert?) to show progress of loading chat
+        let alert = loadingProgress!.setup()
+        self.present(alert, animated: true)
+    }
+    
+    
+    func updateProgress(percentComplete:Int) {
+        //update loadingProgress:chatLoadingAlert? with loading status
         if loadingProgress != nil {
             loadingProgress!.updateProgresss(progress: percentComplete)
         }
     }
     
     
-    func processingComplete(message:String) {
-        print("homeViewController: func processingComplete(message:String) {")
-    
-        if message == "saved" {
-            
-            updateChatStats(recentChat: true)
+    func processingError() {
+        
+        //dismiss the UIAlertController from loadingProgress:chatLoadingAlert?
+        self.dismiss(animated: true, completion: {
             
             //reset variables
-            isLoading = false
-            openWithURL = nil
-            
-            self.dismiss(animated: true, completion: {
-                self.loadingProgress = nil //dismiss loadingProgress:loadingAlert?
-            })
+            self.openWithURL = nil
+            self.isLoading = false
+            self.loadingProgress = nil
+            self.fp = nil
             
             
-        }
+            //alert the user that there was an error loading the file
+            let alertController = UIAlertController(title: "Apologies, I don't recognize the file", message: "Please make sure the region format of the chat history file matches the region settings of your phone (\(Helper.app.getLocale()));\nOr try another chat file", preferredStyle: .alert)
+            
+            let actionOk = UIAlertAction(title: "Ok", style: .cancel)
+            alertController.addAction(actionOk)
+            
+            self.present(alertController, animated: true) {}
+        })
     }
-
+    
+    
+    func processingSaving() {}
+    
+    
+    func processingComplete() {
+        
+        //dismiss the UIAlertController from loadingProgress:chatLoadingAlert?
+        self.dismiss(animated: true, completion: {
+            
+            //reset variables
+            self.openWithURL = nil
+            self.isLoading = false
+            self.loadingProgress = nil
+            self.fp = nil
+            
+            self.updateChatStats(recentChat: true)
+        })
+    }
+ 
 }
 

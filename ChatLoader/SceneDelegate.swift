@@ -12,11 +12,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        //ChatLoader in background when invoked by UIActivityViewController/'share' of exported Whatsapp chat .zip file
+        //ChatLoader opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
        
         guard let url = URLContexts.first?.url else { return }
         
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "processFile"), object: self, userInfo:["URLtoProcess":url])
+        NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:["URLtoProcess":url])
     }
     
 

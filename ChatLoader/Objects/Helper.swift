@@ -6,11 +6,13 @@
 //
 
 /*
-    ChatLoader v1.0 verified against WhatsApp v2.21.90.14
-    
- Exported file notes
- *******************
-
+ 
+ Exported WhatsApp file notes
+ ****************************
+ 
+    ChatLoader v0.1 verified against WhatsApp v2.21.90.14
+    ChatLoader v0.2 verified against WhatsApp v2.26.10.74
+ 
      * The chat transcript is exported to file "_chat.txt" (UTF8 encoding); archived within exported .zip file:
          "WhatsApp Chat - [chat_name].zip" (along with any attachments)
      
@@ -26,22 +28,24 @@
          NOTE:
              - exported message date format may vary based on localization
              - exported message timestamp format dependent on 12/24 clock settings
-             - depending on localization settings there may not be a ", " between the date and timestamp, i.e.:
+             - depending on localization settings there may not be a ", " between the date and timestamp and instead uses " ", i.e.:
                  [date timestamp] sender: message
              - this file "Helper.swift" assumes the exported message format of:
                  [DD/M/YY, HH:mm:ss] sender: message
          
      * "System" message format (i.e. 'blue, centered' messages; or 'off-white, centered' messages from WhatsApp v2.22.19.78):
 
-         a) Triggered by a user action such as: admin creates the group chat; group admin changes "subject", i.e. group name; group admin changes group icon; group admin changes group description; group admin adds/removes sender; sender removes themself; sender changes number; Turning on/off disappearing messages; user pins a message etc:
+         a) Triggered by a user action such as: Admin creates the group chat; Admin changes "group name"; Admin changes group icon; Admin changes group description; Admin adds/removes sender; sender removes themself; sender changes number; Turning on/off disappearing messages; user pins a message etc:
              [DD/M/YY, HH:mm:ss] (U+201E)message
                  or
              [DD/M/YY, HH:mm:ss] (U+201E)sender: message
-                 (NOTE: from at least Whatsapp v2.26.10.74, the "system" messages are of the format "[DD/M/YY, HH:mm:ss] (U+201E)sender: message";
-                        Therefore unable to distinguish between the group name and a sender.
+                 (NOTE: from at least Whatsapp v2.26.10.74, the "system" messages are of the format "[DD/M/YY, HH:mm:ss] sender: message";
+                        Where sender is either the "group name" or a sender. Therefore unable to distinguish between the "group name" and a sender.
                         For 1-to-1 chats, the outgoing message receipient (ie. left hand side) appears as the sender of the "system" messages)
+                 (NOTE: For groups created by "you", the sender of the "created group message" is the "group name";
+                        For groups created by not "you", the sender of the "created group message" is the creator of the group
                  (NOTE: message is exported as a message from that user (ie. the user who triggered the action is the sender))
-                 (NOTE: In a group chat, an admin adding/removing a user to the group chat is exported as a message from the user that was added/removed (ie. the user is the sender))
+                 (NOTE: In a group chat, Admin adding/removing a user to the group chat is exported as a message from the user that was added/removed (ie. the removed user is the sender))
                  (NOTE: message *may not* have the (U+201E) between the date/time and the sender; or between the date/time and the message)
                  
 
@@ -116,8 +120,8 @@
                  .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines
      
 
- Message types (taken from WhatsApp/Settings/Data and Storage Usage/Storage Usage/)
- **********************************************************************************
+ Message types (taken from older verson of WhatsApp under Settings/Data and Storage Usage/Storage Usage/)
+ *********************************************************************************************************
   
       Text
       Contacts
@@ -347,8 +351,9 @@
      * "System" messages (i.e. 'blue, centered'/'off-white, centered' messages) from the WhatsApp platform are treated as a 'normal' message from either:
          a) sender = chat_name; or
          b) sender = sender_name
-         (NOTE: if chat_name (or group name/"subject") has been changed multiple times, then the message sender may not match the exported chat filename)
-         (NOTE: In a group chat, an admin adding/removing a user to the group chat is treated as a 'normal' message from the user that was added/removed (ie. the user is the sender))
+         (NOTE: if chat_name (or group name/"subject") has been changed multiple times, then the message sender may not match the exported chat filename
+            --> Update for WhatsApp v2.26.10.74: for group chats, the system sender (ie. the group name) changes to the updated group name for all messages, including messages sent under a previous group name.
+         (NOTE: In a group chat, Amin adding/removing a user to the group chat is treated as a 'normal' message from the user that was added/removed (ie. the added/removed user is the sender))
 
      * 'Broadcast' messages (i.e. 'yellow, centered' messages; such as the encryted chat notice) are treated as a 'normal' message from sender with name = chat_name, note that for 1-to-1 chats the chat_name = other_senders_name
      
@@ -371,7 +376,7 @@
      * Generated message "Invitation to join my Whatsapp group" is treated as a "system" message (i.e. 'blue, centered' message/'off-white, centered' message) with the format:
          sender:
 
-     * Generated message for an "Invite to Group via link" message (i.e message text "Invitation to jon my WhatsApp group") and associated 'group chat attachment' are treated as a "system" messages (i.e. 'blue, centered'/'off-white, centered' messages)'blank' message with text:
+     * Generated message for an "Invite to Group via link" message (i.e message text "Invitation to jon my WhatsApp group") and associated 'group chat attachment' are treated as a "system" message (i.e. 'blue, centered'/'off-white, centered' messages) from the sender but with no message text, ie 'blank':
              sender:
 
      * Generated message for an "Invite to Group via link" message (with: icon, "Join Group" button; forward button; and user message) is treated as a 'normal' message with only the 'user message text' (including the chat URL)
@@ -460,8 +465,146 @@
           - a resized copy of the source sticker (when "4. Include images" = true AND exported chat file "Attach Media")
 
      * Messages in the generated PDF with an image/placeholder icon contain the underlying 'normal' message (i.e "X omitted" or the exported attachment syntax) in a transparent text colour, i.e it can still be searched/selected in a PDF viewer app
+*/
 
+/*
+ ChatLoader file system
+ **********************
+ 
+ //ChatLoader private directory
+ if let docsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
+    print("library private dir: \(docsDir.path)")
+ }
+ 
+ ../ChatLoaderPrivateDocuments
+ ../ChatLoaderPrivateDocuments/importedChats/               --> directory to store chat attachments (in incrementally numbered directories corresponding to the Chat.chatID)
+ ../ChatLoaderPrivateDocuments/importedChats/tempDir        --> temp directory for unzipping exported chats - either deleted if loading chat fails or renamed corresponding to the Chat.chatID
+ ../ChatLoaderPrivateDocuments/importedChats/NNN            --> Incrementally numbered directory (corresponds to the Chat.chatID) to store attachments from that chat
+ 
+ //directory structure created in AppDelegate:application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
+ UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
+ UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
+ UserDefaults.standard.set("importedChats/tempDir", forKey: "tempDirectory")
+ 
+*/
 
+/*
+ UserDefaults (set in AppDelegate)
+ *********************************
+ 
+ //directory structure, fixed values
+ UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
+ UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
+ UserDefaults.standard.set("importedChats/tempDir", forKey: "tempDirectory")
+ 
+ //misc
+ UserDefaults.standard.set("0.1", forKey: "versionNumber")  //incremented on version updates
+ 
+*/
+ 
+/*
+ Opening files with ChatLoader
+ *****************************
+ 
+ Add to Info.plist:
+     <key>CFBundleDocumentTypes</key>
+     <array>
+         <dict>
+             <key>CFBundleTypeIconFiles</key>
+             <array/>
+             <key>CFBundleTypeName</key>
+             <string>zip file</string>
+             <key>CFBundleTypeRole</key>
+             <string>Editor</string>
+             <key>LSHandlerPack</key>
+             <string>Owner</string>
+             <key>LSHandlerRank</key>
+             <string>Default</string>
+             <key>LSItemContentTypes</key>
+             <array>
+                 <string>com.pkware.zip-archive</string>
+             </array>
+         </dict>
+         <dict>
+             <key>CFBundleTypeIconFiles</key>
+             <array/>
+             <key>CFBundleTypeName</key>
+             <string>public archive</string>
+             <key>CFBundleTypeRole</key>
+             <string>Editor</string>
+             <key>LSHandlerPack</key>
+             <string>Owner</string>
+             <key>LSHandlerRank</key>
+             <string>Default</string>
+             <key>LSItemContentTypes</key>
+             <array>
+                 <string>public.zip-archive</string>
+             </array>
+         </dict>
+     </array>
+ 
+ 
+ 1) ChatLoader **launched** via UIActivityViewController/'Share'/"Copy to app" from an exported Whatsapp chat .zip file
+
+ a) homeViewController.openWithURL is set in SceneDelegate.swift
+    --> func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {}
+ 
+ 
+ 2) ChatLoader **opened from background** via UIActivityViewController/'Share'/"Copy to app" from an exported Whatsapp chat .zip file
+    
+ a)  Notification listener is set in SceneDelegate:
+        func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {}
+ 
+ b) homeViewController.openWithURL is set in homeViewController.swift via Notification handler
+    --> NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in }
+ 
+ 
+ 3) ChatLoader **launched or opened from background** via Core Spotlight (not implemented)
+ 
+ a) Notification listener is set in SceneDelegate.swift:
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {}
+ 
+ */
+
+/*
+ ChatLoader WhatsApp message types
+ *********************************
+ 
+ Text
+ Contacts
+ Locations
+ 
+ Photos
+ GIFs
+ Videos
+ Voice Messages
+ Documents
+ Stickers
+ 
+ Attachment types for Message.attachmentType(Int16):
+ 
+ Exported with "Attach media":
+ attachmentType File type      Extension   ‘Filename code’  Preview image
+ 0              Text            n/a        n/a              n/a - message text
+ 1              Contact        .vcf        n/a              "iconContactCard 144.png"
+ 2              Locations       n/a        n/a              n/a - message text of "Location" format
+ 3              Image          .jpg        PHOTO            .jpg or "iconImage 144.png"
+ 4              GIF            .mp4        GIF              .jpg (generated thumbnail) or "iconGIF 144.png"
+ 5              Video          .mp4/.mov   VIDEO            .jpg (generated thumbnail) or "iconVideo 144.png"
+ 6              Voice message  .opus       AUDIO            "iconAudio 144.png"
+ 7              Document       multiple    n/a              "iconDocument 144.png"
+ 8              Sticker        .webp       STICKER          .webp or "iconImage 144.png"
+ 
+ Exported with "Without media":
+ attachmentType File type      Message text            Preview image
+ 101            Contact        Contact card omitted    "iconContactCard 144.png"
+ 102            Locations      n/a                     n/a - message text of "Location" format
+ 103            Image          image omitted           "iconImage 144.png"
+ 104            GIF            GIF omitted             "iconGIF 144.png"
+ 105            Video          video omitted           "iconVideo 144.png"
+ 106            Voice message  audio omitted           "iconAudio 144.png"
+ 107            Document       document omitted        "iconDocument 144.png"
+ 108            Sticker        sticker omitted         "iconImage 144.png"
 */
 
 import Foundation
@@ -473,7 +616,10 @@ class Helper {
         return Helper()
     }()
     
+    
+    //MARK: variables
     let animationTime: Double = 0.25
+    var printToggle: Bool = false
     
     let colorPrimary = UIColor(red: 224.0/255, green: 31.0/255, blue: 31.0/255, alpha: 1) // hex: #E01F1F
     let colorPrimaryCellSelected = UIColor(red: 250.0/255, green: 180.0/255, blue: 180.0/255, alpha: 0.8) // hex: FAB3B3
@@ -481,8 +627,19 @@ class Helper {
     let colorSecondary = UIColor(red: 16.0/255, green: 209.0/255, blue: 224.0/255, alpha: 1) //10D1E0
     let colorTertiary = UIColor(red: 135.0/255, green: 16.0/255, blue: 224.0/255, alpha: 1) //8710E0
     
+    let notificationRawValue = "copyToAppFile"  //used for notification when ChatLoader launched/opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
+    let whatsappZipFilePrefix = "WhatsApp Chat - "
+    let groupMessageSender = "group_status_update"  //used when cannot distinguish between sender and message; assume that it is a group status update
     
-    //MARK: date functions
+    
+    
+    
+    //MARK: date and formatting functions
+    func getLocale() -> String {
+        return "\((Locale.current as NSLocale).object(forKey: NSLocale.Key.identifier)!)"
+    }
+    
+    
     func getTodayYYYYMMDD() -> String {
         
         let date = Date()
@@ -511,10 +668,6 @@ class Helper {
         } else {
             return nil
         }
-    }
-    
-    func getLocale() -> String {
-        return "\((Locale.current as NSLocale).object(forKey: NSLocale.Key.identifier)!)"
     }
     
     
@@ -572,56 +725,103 @@ class Helper {
         return numberFormatter.string(from: NSNumber(value: number))
     }
     
+    
     //MARK: directory functions
+    func testPrintURLs() {
+        printToggle = true
+        
+        var tempURL = documentsDirectoryURL()
+        tempURL = libraryDirectoryURL()
+        tempURL = tempDirectoryURL()
+        tempURL = inboxDirectoryURL()
+        tempURL = appDirectoryURL()
+        tempURL = importedChatsURL()
+        tempURL = tempDirURL()
+        
+                
+        printToggle = false
+        
+        if printToggle {
+            print("\(tempURL)")
+        }
+    }
+    
+    
     func documentsDirectoryURL() -> URL {
-        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        //return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        
+        if printToggle {
+            print("func documentsDirectoryURL() -> URL {\n\t\(url)")
+        }
+        
+        return url
     }
     
     func libraryDirectoryURL() -> URL {
-        return FileManager.default.urls(for: FileManager.SearchPathDirectory.libraryDirectory, in: .userDomainMask).first!
+        
+        let url = FileManager.default.urls(for: FileManager.SearchPathDirectory.libraryDirectory, in: .userDomainMask).first!
+        
+        if printToggle {
+            print("func libraryDirectoryURL() -> URL {\n\t\(url)")
+        }
+        
+        return url
     }
     
     func tempDirectoryURL() -> URL {
-        return FileManager.default.temporaryDirectory
-        //urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(AppDirectories.Temp.rawValue) //"tmp")
+        
+        let url = FileManager.default.temporaryDirectory
+        
+        if printToggle {
+            print("func tempDirectoryURL() -> URL {\n\t\(url)")
+        }
+        
+        return url
     }
     
     func inboxDirectoryURL() -> URL {
-        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Inbox")// (AppDirectories.Inbox.rawValue) // "Inbox")
-    }
-    
-    
-    func formatChatIDToDirectoryName(chatID:Int) -> String {
-        //create a 4 digit fileID name
         
-        let tempStr = String(String("000" + String(chatID)).suffix(4))
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Inbox")// (AppDirectories.Inbox.rawValue) // "Inbox")
         
-        print("func formatChatIDToDirectoryName(chatID:Int) -> \(tempStr)")
-        
-        return tempStr
-    }
-    
-    
-    func printFilesInbox() {
-        
-        let fileManager = FileManager()
-        
-        do {
-            let fileNames = try fileManager.contentsOfDirectory(atPath: inboxDirectoryURL().path) as [String]?
-            
-            for fn in fileNames! {
-                
-                print("filename: \(fn)")
-                
-                if fn.range(of: ".zip") != nil {
-                    print("found!")
-                }
-            }
-            
-        } catch let error as NSError {
-            print("WARNING: func printFilesInbox() { no files found! \(error)")
+        if printToggle {
+            print("func inboxDirectoryURL() -> URL {\n\t\(url)")
         }
+        
+        return url
+    }
+    
+    func appDirectoryURL() -> URL {
+        
+        let url = libraryDirectoryURL().appendingPathComponent(UserDefaults.standard.string(forKey: "appDirectory")!)
+        
+        if printToggle {
+            print("func appDirectoryURL() -> URL {\n\t\(url)")
+        }
+        
+        return url
+    }
+    
+    func importedChatsURL() -> URL {
+        
+        let url = appDirectoryURL().appendingPathComponent(UserDefaults.standard.string(forKey: "importedChatsDirectory")!)
+        
+        if printToggle {
+            print("func importedChatsURL() -> URL {\n\t\(url)")
+        }
+        
+        return url
+    }
+    
+    func tempDirURL() -> URL {
+        
+        let url = appDirectoryURL().appendingPathComponent(UserDefaults.standard.string(forKey: "tempDirectory")!)
+        
+        if printToggle {
+            print("func tempDirURL() -> URL {\n\t\(url)")
+        }
+        
+        return url
     }
     
     
@@ -650,9 +850,44 @@ class Helper {
         
         return url
     }
+    
+    
+    func printFilesInbox() {
+        
+        let fileManager = FileManager()
+        
+        do {
+            let fileNames = try fileManager.contentsOfDirectory(atPath: inboxDirectoryURL().path) as [String]?
+            
+            for fn in fileNames! {
+                
+                print("filename: \(fn)")
+                
+                if fn.range(of: ".zip") != nil {
+                    print("found!")
+                }
+            }
+            
+        } catch let error as NSError {
+            print("WARNING: func printFilesInbox() { no files found! \(error)")
+        }
+    }
+    
+    
+    func formatChatIDToDirectoryName(chatID:Int) -> String {
+        //create a 4 digit fileID name
+        
+        let tempStr = String(String("000" + String(chatID)).suffix(4))
+        
+        print("func formatChatIDToDirectoryName(chatID:Int) -> \(tempStr)")
+        
+        return tempStr
+    }
+    
 }
 
 
+//MARK: extensions
 extension URL {
     /* usage:
         let fileUrl: URL

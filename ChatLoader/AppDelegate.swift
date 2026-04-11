@@ -11,31 +11,23 @@ import CoreData
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
-    //ChatLoader opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
-    func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
-        //**here**
-        NSLog("func application(_ application: UIApplication, open: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {")
-        
-        NotificationCenter.default.post(name: Notification.Name(rawValue: "processFile"), object: self, userInfo:["URLtoProcess":open])
-        
-        return true
-    }
-    
-    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        if !UserDefaults.standard.bool(forKey: "hasBeenLaunched") {
+        if !UserDefaults.standard.bool(forKey: "firstLaunch") {
             //first time ChatLoader has been opened, setup user defaults
             
-            UserDefaults.standard.set(true, forKey: "hasBeenLaunched")
+            UserDefaults.standard.set(true, forKey: "firstLaunch")
             
-            UserDefaults.standard.set("0.1", forKey: "versionNumber")
-                        
-            //directories and files
-            UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
-            UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
+            UserDefaults.standard.set("0.2", forKey: "versionNumber")
         }
+        
+        
+        //directories and files
+        UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
+        UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
+        UserDefaults.standard.set("importedChats/tempDir", forKey: "tempDirectory")
+        
         
         //create directory structure
         if let docsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
@@ -45,7 +37,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let fileManager = FileManager()
             
             //"importedChats" directory: each chat has a sub-folder named as chat ID
-            let newDir =  docsDir.appendingPathComponent("ChatLoaderPrivateDocuments/importedChats")
+            let importChatsDir = UserDefaults.standard.string(forKey: "appDirectory")! + "/" + UserDefaults.standard.string(forKey: "importedChatsDirectory")!
+            let newDir =  docsDir.appendingPathComponent(importChatsDir)
             
             if !fileManager.fileExists(atPath: (newDir.path)) {
                 
@@ -56,7 +49,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             }
         }
-        
         
         return true
     }
