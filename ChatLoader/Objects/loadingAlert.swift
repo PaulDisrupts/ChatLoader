@@ -4,6 +4,8 @@
 //
 //  Custom UIAlertController that shows the progress of a task, eg. loading a chat
 //
+//  WIP - subclass of UIAlertController, issues with autolayout
+//
 //  Created by Paul Whiten on 5/4/26.
 //
 
@@ -31,10 +33,10 @@ class loadingAlert: UIAlertController {
         super.init(nibName: nil, bundle: nil)
         self.title = "Loading chat"
         
-        let screenBounds = UIScreen.main.bounds
-        let centerX = screenBounds.midX
-        let centerY = screenBounds.midY
-        let screenCenter = CGPoint(x: centerX, y: centerY)
+//        let screenBounds = UIScreen.main.bounds
+//        let centerX = screenBounds.midX
+//        let centerY = screenBounds.midY
+//        let screenCenter = CGPoint(x: centerX, y: centerY)
 /*
         //set size contraints of loadingAlert
         let constraintWidth = NSLayoutConstraint(

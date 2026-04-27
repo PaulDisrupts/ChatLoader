@@ -29,6 +29,7 @@
 		9CD1E58825D57F3C0012A02C /* ChatLoaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E58725D57F3C0012A02C /* ChatLoaderUITests.swift */; };
 		9CD1E59A25D581590012A02C /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E59925D581590012A02C /* Helper.swift */; };
 		AF1A888D2F82156F00B43B11 /* loadingAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF1A888C2F82156F00B43B11 /* loadingAlert.swift */; };
+		AFDD51652F8A11C700EE0C7A /* chatLoadingAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDD51642F8A11C700EE0C7A /* chatLoadingAlert.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +86,7 @@
 		9CD1E58925D57F3C0012A02C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9CD1E59925D581590012A02C /* Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
 		AF1A888C2F82156F00B43B11 /* loadingAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = loadingAlert.swift; sourceTree = "<group>"; };
+		AFDD51642F8A11C700EE0C7A /* chatLoadingAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = chatLoadingAlert.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -238,6 +240,7 @@
 				9CD1E59925D581590012A02C /* Helper.swift */,
 				9CC4D00E25D6CC8F00390D79 /* fileProcessor.swift */,
 				AF1A888C2F82156F00B43B11 /* loadingAlert.swift */,
+				AFDD51642F8A11C700EE0C7A /* chatLoadingAlert.swift */,
 			);
 			path = Objects;
 			sourceTree = "<group>";
@@ -384,6 +387,7 @@
 				9CC4D00325D6BE4100390D79 /* mztools.c in Sources */,
 				9CD1E59A25D581590012A02C /* Helper.swift in Sources */,
 				9CD1E56D25D57F3A0012A02C /* ChatLoader.xcdatamodeld in Sources */,
+				AFDD51652F8A11C700EE0C7A /* chatLoadingAlert.swift in Sources */,
 				9CC4D00225D6BE4100390D79 /* ioapi.c in Sources */,
 				9C29D32D2688BE290058EF3B /* Chat+CoreDataClass.swift in Sources */,
 				9C29D32E2688BE290058EF3B /* Chat+CoreDataProperties.swift in Sources */,

@@ -476,15 +476,13 @@
     print("library private dir: \(docsDir.path)")
  }
  
- ../ChatLoaderPrivateDocuments
- ../ChatLoaderPrivateDocuments/importedChats/               --> directory to store chat attachments (in incrementally numbered directories corresponding to the Chat.chatID)
- ../ChatLoaderPrivateDocuments/importedChats/tempDir        --> temp directory for unzipping exported chats - either deleted if loading chat fails or renamed corresponding to the Chat.chatID
- ../ChatLoaderPrivateDocuments/importedChats/NNN            --> Incrementally numbered directory (corresponds to the Chat.chatID) to store attachments from that chat
+ ../Library/ChatLoaderPrivateDocuments/
+ ../Library/ChatLoaderPrivateDocuments/importedChats/               --> directory to store chat attachments (in incrementally numbered directories corresponding to the Chat.chatID)
+ ../Library/ChatLoaderPrivateDocuments/importedChats/tempDir/       --> temp directory for unzipping exported chats - either deleted if loading chat fails or renamed corresponding to the Chat.chatID
+ ../Library/ChatLoaderPrivateDocuments/importedChats/NNN/           --> Incrementally numbered directory (corresponds to the Chat.chatID) to store attachments from that chat
  
- //directory structure created in AppDelegate:application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
- UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
- UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
- UserDefaults.standard.set("importedChats/tempDir", forKey: "tempDirectory")
+ //directory structure created *using varibles declared in Helper.swift) in AppDelegate:application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
+ 
  
 */
 
@@ -492,13 +490,9 @@
  UserDefaults (set in AppDelegate)
  *********************************
  
- //directory structure, fixed values
- UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
- UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
- UserDefaults.standard.set("importedChats/tempDir", forKey: "tempDirectory")
- 
- //misc
+ UserDefaults.standard.bool(forKey: "hasBeenLaunched")      //first time launch to set initial persistent variables
  UserDefaults.standard.set("0.1", forKey: "versionNumber")  //incremented on version updates
+ UserDefaults.standard.integer(forKey: "totalChatsLoaded")  //counter for all-tim number of chats loaded; cannot use current number of chats in case of deleted chats
  
 */
  
@@ -619,7 +613,7 @@ class Helper {
     
     //MARK: variables
     let animationTime: Double = 0.25
-    var printToggle: Bool = false
+    var printToggle: Bool = true
     
     let colorPrimary = UIColor(red: 224.0/255, green: 31.0/255, blue: 31.0/255, alpha: 1) // hex: #E01F1F
     let colorPrimaryCellSelected = UIColor(red: 250.0/255, green: 180.0/255, blue: 180.0/255, alpha: 0.8) // hex: FAB3B3
@@ -631,8 +625,10 @@ class Helper {
     let whatsappZipFilePrefix = "WhatsApp Chat - "
     let groupMessageSender = "group_status_update"  //used when cannot distinguish between sender and message; assume that it is a group status update
     
-    
-    
+    //directories
+    let appDirectory: String = "ChatLoaderPrivateDocuments"
+    let importedChatsDirectory: String = "importedChats"
+    let tempDirectory: String = "importedChats/tempDir"
     
     //MARK: date and formatting functions
     func getLocale() -> String {
@@ -752,18 +748,22 @@ class Helper {
         let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         
         if printToggle {
-            print("func documentsDirectoryURL() -> URL {\n\t\(url)")
+            print("func documentsDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
     }
     
     func libraryDirectoryURL() -> URL {
-        
+/*
+        if let docsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
+           print("library private dir: \(docsDir.path)")
+        }
+*/
         let url = FileManager.default.urls(for: FileManager.SearchPathDirectory.libraryDirectory, in: .userDomainMask).first!
         
         if printToggle {
-            print("func libraryDirectoryURL() -> URL {\n\t\(url)")
+            print("func libraryDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -774,7 +774,7 @@ class Helper {
         let url = FileManager.default.temporaryDirectory
         
         if printToggle {
-            print("func tempDirectoryURL() -> URL {\n\t\(url)")
+            print("func tempDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -785,7 +785,7 @@ class Helper {
         let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Inbox")// (AppDirectories.Inbox.rawValue) // "Inbox")
         
         if printToggle {
-            print("func inboxDirectoryURL() -> URL {\n\t\(url)")
+            print("func inboxDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -793,10 +793,12 @@ class Helper {
     
     func appDirectoryURL() -> URL {
         
-        let url = libraryDirectoryURL().appendingPathComponent(UserDefaults.standard.string(forKey: "appDirectory")!)
+        //../Library/ChatLoaderPrivateDocuments/
+        let url = libraryDirectoryURL().appendingPathComponent(appDirectory)
+        
         
         if printToggle {
-            print("func appDirectoryURL() -> URL {\n\t\(url)")
+            print("func appDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -804,10 +806,11 @@ class Helper {
     
     func importedChatsURL() -> URL {
         
-        let url = appDirectoryURL().appendingPathComponent(UserDefaults.standard.string(forKey: "importedChatsDirectory")!)
+        //../Library/ChatLoaderPrivateDocuments/importedChats/
+        let url = appDirectoryURL().appendingPathComponent(importedChatsDirectory)
         
         if printToggle {
-            print("func importedChatsURL() -> URL {\n\t\(url)")
+            print("func importedChatsURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -815,10 +818,11 @@ class Helper {
     
     func tempDirURL() -> URL {
         
-        let url = appDirectoryURL().appendingPathComponent(UserDefaults.standard.string(forKey: "tempDirectory")!)
+        //../Library/ChatLoaderPrivateDocuments/importedChats/tempDir/
+        let url = appDirectoryURL().appendingPathComponent(tempDirectory)
         
         if printToggle {
-            print("func tempDirURL() -> URL {\n\t\(url)")
+            print("func tempDirURL() -> URL {\n\t\(url.path)")
         }
         
         return url

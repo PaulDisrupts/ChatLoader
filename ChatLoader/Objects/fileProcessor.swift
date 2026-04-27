@@ -90,25 +90,6 @@ class fileProcessor:NSObject {
         //2. get file name
         getChatName()   //note that the filename does not have to be prefixed with Helper.app.whatsappZipFilePrefix, ie. "WhatsApp Chat - "
         
-        
-
- 
-/*
-        var errorMessage: Bool = true
-        
-        if getChatName() {
-            if unzipExportedFile() {
-                if let fileToProcessURL {
-                    if validateTextFileFormat() {
-                        
-                    }
-                
-                }
-            }
-        }
-*/
-        
-        
         //3. unzip files, find _chat.txt, remove unwanted files
         unzipExportedFile()
         
@@ -116,8 +97,9 @@ class fileProcessor:NSObject {
         if fileToProcessURL != nil {
             validateTextFileFormat()
         } else {
-            print("fileProcessor.swift/n/tfunc processExportedFile() {/n/tif fileToProcessURL != nil {/n/tERROR:.txt not found!!")
-            errorLoadingFile() //**here**
+            //a) No .txt file found in the .zip (ie. inputFileURL, which has to be of type .zip); note that the text filename does not have to be "_chat.txt"
+            print("fileProcessor.swift\n\tfunc processExportedFile() {\n\t\tif fileToProcessURL != nil {\n\t\t\tERROR:.txt not found!!")
+            errorLoadingFile()
         }
         
         //5. rename directory --> called in func saveContexts() {
@@ -185,16 +167,9 @@ class fileProcessor:NSObject {
                     if printToggle {
                      print("\nupdated fileToProcessURL: \(fileToProcessURL!.path)")
                     }
+                } else {//add else if statement to keep filetypes, eg. else if f.hasSuffix(".jpg")
                     
-                } else if f.hasSuffix(".jpg") {
-                    //keep this file type
-                    
-                } else if f.hasSuffix(".png") {
-                    //keep this file type
-                    
-                } else {
                     //remove unwanted file(s)
-                    
                     do {
                         try fileManager.removeItem(atPath: tempURL.path)
                         print("\nfunc unzipExportedFile(): removed file: \(tempURL.lastPathComponent)")
@@ -217,7 +192,7 @@ class fileProcessor:NSObject {
         var validFileFormat = false
         
         // **ASSUMPTION**: WhatsApp message end of message sequence is: \r\n
-        if let mytext = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n") {
+        if let textFileContents = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n") {
 
             /*
              Expected message format depending on localization settings:
@@ -232,7 +207,7 @@ class fileProcessor:NSObject {
               3) "] "          --> indexTimeSender; delimiter between timestamp and sender
               4) ": "          --> indexSenderMessage; delimiter between sender and message
              */
-            if let inputLine = mytext.first {
+            if let inputLine = textFileContents.first {
                 if let indexDate = inputLine.range(of: "[") { //1) "[" --> indexDate; first char of the timestamp
                     
                     /*
@@ -263,9 +238,13 @@ class fileProcessor:NSObject {
                                         if indexTimeSender.upperBound<indexSenderMessage.lowerBound {
                                             //at least one message in valid format, process the text file
                                             
-                                            print("processTextFile(inputFile: mytext, dateTimeDelimiter: \(dateTimeDelimiter)")
+                                            if printToggle {
+                                                print("func validateTextFileFormat() {\n\tinputLine: \(inputLine)")
+                                                print("func validateTextFileFormat() {\n\tprocessTextFile(inputFile: textFileContents, dateTimeDelimiter: \(dateTimeDelimiter)")
+                                            }
+                                            
                                             validFileFormat = true
-                                            processTextFile(inputFile: mytext, dateTimeDelimiter: dateTimeDelimiter)
+                                            processTextFile(inputFile: textFileContents, dateTimeDelimiter: dateTimeDelimiter)
                                         }
                                     }//if let indexSenderMessage = inputLine.range(of: ": ") {
                                 }//if indexDateTime!.upperBound<indexTimeSender.lowerBound {
@@ -273,11 +252,12 @@ class fileProcessor:NSObject {
                         }//if indexDate.upperBound<indexDateTime!.lowerBound {
                     }//if indexDatetime != nil {
                 }//if let indexDate = inputLine.range(of: "["){
-            }//if let inputLine = mytext.first {
-        }//if let mytext = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n") {
+            }//if let inputLine = textFileContents.first {
+        }//if let textFileContents = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n") {
         
         //.txt file format of fileToProcessURL! not valid format
         if !validFileFormat {
+            //b) .txt file is of the wrong format
             print("fileProcessor.swift/n/tfunc validateTextFileFormat() {/n/tif !validFileFormat {/n/tERROR: .txt invalid format!!")
             errorLoadingFile()
         }
@@ -298,7 +278,7 @@ class fileProcessor:NSObject {
         selectedChat!.chatName = chatName!
         selectedChat!.dateLoad = NSDate()
         
-        selectedChat!.chatID = Int16(UserDefaults.standard.integer(forKey: "totalFilesLoaded") + 1) // chatID updated in func saveContexts()
+        selectedChat!.chatID = Int16(UserDefaults.standard.integer(forKey: "totalChatsLoaded") + 1) // chatID saved in saveContexts(); UserDefaults.standard.integer(forKey: "totalChatsLoaded") incremented in func saveContexts() --> renameDirectory()
         
         
         /*
@@ -416,45 +396,35 @@ class fileProcessor:NSObject {
                     }
                 }
                             
-            } //for inputLine in inputFile {
+            }//for inputLine in inputFile {
             
+            //loading file complete, at least one message processed, ie. inputFile:[String].first , as .txt file format validated in validateTextFileFormat()
             NSLog("**END: process file")
             
-            //update chat
-            if self.previousMessageID != nil {
-                //loading file complete, at least one message processed as .txt file format validated in validateTextFileFormat()
-                
-                //update chat count and senders
-                self.selectedChat!.senderCount = Int16(distinctSenders.count)
-                
-                var distinctSendersList:String = ""
-                for senderName in distinctSenders {
-                    distinctSendersList = distinctSendersList + "\(senderName)\n"
-                }
-                
-                distinctSendersList = String(distinctSendersList.dropLast(1))   //remove the last \n character
-                self.selectedChat!.senderList = distinctSendersList
-                
-                if self.printToggle {
-                    print("fileProcessor_distinctSendersList:\n\(distinctSendersList)")
-                }
-                
-                
-                //update the UI on main queue
-                DispatchQueue.main.async(execute: {
-                    
-                    //finished processing, save to coredata in parent VC
-                    self.delegate?.processingSaving()
-                    self.saveContexts()
-                })
-                
-            } else {//if self.previousMessageID != nil {
-                //no messages processed (wrong file format?), delete file; note the section should not execute as .txt file format is validated in validateTextFileFormat()
-                print("fileProcessor.swift/n/tfunc processTextFile(inputFile:[String], dateTimeDelimiter:String) {/n/t} else {//if self.previousMessageID != nil {/n/tERROR: No messages processed")
-                self.errorLoadingFile()
+            //update selectedChat variables
+            self.selectedChat!.senderCount = Int16(distinctSenders.count)
+            
+            var distinctSendersList:String = ""
+            for senderName in distinctSenders {
+                distinctSendersList = distinctSendersList + "\(senderName)\n"
             }
             
-        }) // DispatchQueue.global(qos: .background).async(execute: {
+            distinctSendersList = String(distinctSendersList.dropLast(1))   //remove the last \n character
+            self.selectedChat!.senderList = distinctSendersList
+            
+            if self.printToggle {
+                print("fileProcessor_distinctSendersList:\n\(distinctSendersList)")
+            }
+            
+            //update the UI on main queue
+            DispatchQueue.main.async(execute: {
+                
+                //finished processing, save to coredata in parent VC
+                self.delegate?.processingSaving()
+                self.saveContexts()
+            })
+            
+        })//DispatchQueue.global(qos: .background).async(execute: {
     }
     
     
@@ -661,20 +631,17 @@ class fileProcessor:NSObject {
     
     func renameDirectory() {
         
-        //rename folder then delete .zip file
-        let fileManager = FileManager()
-        
         do {
+            
+            let fileManager = FileManager()
             
             deleteFiles(tempDirectory: false)
             
-            let directoryIndex = UserDefaults.standard.integer(forKey: "totalFilesLoaded") + 1
-            let directoryName = Helper.app.formatChatIDToDirectoryName(chatID: directoryIndex)
+            //rename "tempDir" to self.selectedChat!.chatID
+            try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(Helper.app.formatChatIDToDirectoryName(chatID: Int(self.selectedChat!.chatID))))
             
-            try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(String(directoryName)))
-            
-            //update UserDefaults
-            UserDefaults.standard.set(directoryIndex, forKey: "totalFilesLoaded")
+            //increment the all-time chat count
+            UserDefaults.standard.set(Int(self.selectedChat!.chatID), forKey: "totalChatsLoaded")
             UserDefaults.standard.synchronize()
             
 
@@ -700,7 +667,7 @@ class fileProcessor:NSObject {
         let fileManager = FileManager()
         
         if tempDirectory {
-            //delete temp directory and contents, ie error loading file
+            //delete temp directory and contents, ie error loading chat file
             
             do {
                 try fileManager.removeItem(at: tempDirURL!)

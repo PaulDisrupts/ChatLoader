@@ -8,16 +8,21 @@
 import UIKit
 import CoreData
 
-class homeViewController: UIViewController, protocolFileProcessor {
+class homeViewController: UIViewController, protocolFileProcessor, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     
     //MARK: Class variables
     var openWithURL:URL?                    //set by NSNotification .userInfo?["URLtoProcess"]
     var isLoading:Bool = false              //used to stop two files being loaded at once
     var loadingProgress:chatLoadingAlert?   //object (with UIAlertController) to update loading progress
-    var fp:fileProcessor?
+    var fp:fileProcessor?                   //object to process the imported .zip (_chat.txt) file and save to CoreData
+    
+    var tableChats: UITableView?
+    let cellIdentifier = "cellLoadedChat"//
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var fetchedResultsController:NSFetchedResultsController<Chat> = NSFetchedResultsController()
+    
     
     
     //MARK: IBOutlets
@@ -40,8 +45,23 @@ class homeViewController: UIViewController, protocolFileProcessor {
     }
     
     @IBAction func buttonLoadChatPressed(_ sender: UIButton) {
+        
         if loadFileForSimulator() {
             loadFileFromURL(fileURL: openWithURL!)
+            
+        } else {
+            
+            let importedChatsDir = Helper.app.importedChatsURL().path
+            
+            let alertController = UIAlertController(title: ".zip file not found", message: "Place the .zip file in:\n\(importedChatsDir)", preferredStyle: .alert)
+            
+            let actionOK = UIAlertAction(title: "Copy directory path", style: .default) { (action) in
+                UIPasteboard.general.string = importedChatsDir
+            }
+            
+            alertController.addAction(actionOK)
+            
+            self.present(alertController, animated: true) {}
         }
     }
 
@@ -52,6 +72,8 @@ class homeViewController: UIViewController, protocolFileProcessor {
         // Do any additional setup after loading the view.
         
         addNotifications()
+        setFetchedResultsController()
+        setupTableChats()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -90,10 +112,40 @@ class homeViewController: UIViewController, protocolFileProcessor {
     }
     
     
+    func setupTableChats() {
+        
+        tableChats = UITableView(frame: .zero, style: .plain)
+        tableChats!.translatesAutoresizingMaskIntoConstraints = false
+        
+        
+        tableChats!.dataSource = self
+        tableChats!.delegate = self
+        tableChats!.backgroundColor = UIColor.green
+//        tableChats!.tableFooterView = UIView()
+        
+        //register reusable cell
+        tableChats!.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
+        
+        self.view.addSubview(tableChats!)
+        self.view.bringSubviewToFront(buttonLoadChat)
+        self.view.bringSubviewToFront(labelTotalChats)
+        self.view.bringSubviewToFront(labelTotalMessages)
+        
+        NSLayoutConstraint.activate([
+            tableChats!.topAnchor.constraint(equalTo: view.topAnchor),
+            tableChats!.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableChats!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableChats!.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+    
+    
     func loadFileFromURL(fileURL:URL) {
         
         if !isLoading {
             isLoading = true
+            
+            self.tableChats?.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
             
             //process the .zip file
             fp = fileProcessor(delegate: self, inputFile: fileURL)
@@ -115,47 +167,148 @@ class homeViewController: UIViewController, protocolFileProcessor {
     }
     
     
-    //iOS simulator - load file manually put on the macOS file system by setting openWithURL
+    //iOS simulator - load file on the macOS file system (ie put .zip file in ../Library/ChatLoaderPrivateDocuments/) by assigning openWithURL
     func loadFileForSimulator() -> Bool {
         //check directory /ChatLoader for .zip files
         
         var chatFileFound:Bool = false
         
         let fileManager = FileManager()
+            
+        let chatLoaderURL = Helper.app.appDirectoryURL()
         
-        if let libraryDir = FileManager().urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
+        do {
+            let fileNames = try fileManager.contentsOfDirectory(atPath: chatLoaderURL.path) as [String]?
             
-            let privateDir = UserDefaults.standard.string(forKey: "appDirectory")!
-            let chatLoaderURL = libraryDir.appendingPathComponent("\(privateDir)")
-            
-            do {
-                let fileNames = try fileManager.contentsOfDirectory(atPath: chatLoaderURL.path) as [String]?
+            for fn in fileNames! {
                 
-                for fn in fileNames! {
+                if fn.range(of: ".zip") != nil {
                     
-                    if fn.range(of: ".zip") != nil {
-                        
-                        openWithURL = chatLoaderURL.appendingPathComponent(fn)
-                        chatFileFound = true
-                        break
-                    }
+                    openWithURL = nil
+                    openWithURL = chatLoaderURL.appendingPathComponent(fn)
+                    chatFileFound = true
+                    break
                 }
-                
-                if !chatFileFound {
-                    print("Place the exported whatsapp chat .zip file in directory:")
-                    print(chatLoaderURL)
-                }
-                
-            } catch let error as NSError {
-                print("WARNING: func loadFileForSimulator() { no files found! \(error)")
             }
+            
+            if !chatFileFound {
+                print("Place the exported whatsapp chat .zip file in directory:")
+                print(chatLoaderURL)
+            }
+            
+        } catch let error as NSError {
+            print("WARNING: func loadFileForSimulator() { no files found! \(error)")
         }
+
         
         return chatFileFound
     }
     
     
+    //MARK: UITableview delegate
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return fetchedResultsController.sections![section].numberOfObjects
+    }
+    
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+     
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+        
+        let chat = fetchedResultsController.object(at: indexPath)
+        
+        cell.textLabel?.text = "\(chat.chatID)_\(chat.chatName!)"
+        cell.detailTextLabel?.text = "\(chat.chatID)"
+        
+        return cell
+    }
+    
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        let selectedChat = fetchedResultsController.object(at: indexPath)
+        let title = selectedChat.chatName!
+        let message = "\(selectedChat.chatID)\n\(selectedChat.dateLoad!)\n\(selectedChat.senderList!)"
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        
+        let actionOK = UIAlertAction(title: "OK", style: .default) { (action) in
+            tableView.deselectRow(at: indexPath, animated: true)
+        }
+        
+        alertController.addAction(actionOK)
+        
+        self.present(alertController, animated: true)
+    }
+    
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        
+        self.context.delete(self.fetchedResultsController.object(at: indexPath))
+    }
+    
+    
+    //MARK: NSFetchedResultsController
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        
+        switch type {
+            
+        case .insert:
+            //triggered when a loaded chat is saved to the managedObjectContext (from an instance of fileProcessor)
+            tableChats?.insertRows(at: [newIndexPath!], with: UITableView.RowAnimation.right)
+            
+            break
+            
+        case .delete:
+            
+            
+            do {
+                try context.save()
+                
+                tableChats?.deleteRows(at: [indexPath!], with: UITableView.RowAnimation.left)
+                //delete directory!
+                
+            } catch {
+                    print("Error with save: \(error)")
+                }
+            
+            break
+            
+        default: break
+        }
+        
+        self.updateChatStats(recentChat: true)
+    }
+    
+    
     //MARK: CoreData functions
+    func setFetchedResultsController() {
+        
+        context.mergePolicy = NSErrorMergePolicy
+        
+        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "chatID", ascending: false)]
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch let error as NSError {
+            print("ERROR: func setFetchedResultsController() {; try fetchedResultsController.performFetch(): \(error)")
+        }
+    }
+    
+    
     func getTotalMessages() -> Int {
         
         let fetchRequest:NSFetchRequest = Message.fetchRequest()

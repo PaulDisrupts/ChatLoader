@@ -14,30 +14,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        if !UserDefaults.standard.bool(forKey: "firstLaunch") {
-            //first time ChatLoader has been opened, setup user defaults
+        if !UserDefaults.standard.bool(forKey: "hasBeenLaunched") {
+            //first time ChatLoader launched, set persistent variables
             
-            UserDefaults.standard.set(true, forKey: "firstLaunch")
-            
+            UserDefaults.standard.set(true, forKey: "hasBeenLaunched")
+            UserDefaults.standard.set(0, forKey: "totalChatsLoaded")
             UserDefaults.standard.set("0.2", forKey: "versionNumber")
         }
         
-        
-        //directories and files
-        UserDefaults.standard.set("ChatLoaderPrivateDocuments", forKey: "appDirectory")
-        UserDefaults.standard.set("importedChats", forKey: "importedChatsDirectory")
-        UserDefaults.standard.set("importedChats/tempDir", forKey: "tempDirectory")
-        
-        
-        //create directory structure
+        //create directory structure, ie. ../Library/ChatLoaderPrivateDocuments/importedChats/
         if let docsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
-            print("library private dir: \(docsDir.path)")
             
             //create directory structure
             let fileManager = FileManager()
             
             //"importedChats" directory: each chat has a sub-folder named as chat ID
-            let importChatsDir = UserDefaults.standard.string(forKey: "appDirectory")! + "/" + UserDefaults.standard.string(forKey: "importedChatsDirectory")!
+            let importChatsDir = Helper.app.appDirectory + "/" + Helper.app.importedChatsDirectory  //ie "ChatLoaderPrivateDocuments/importedChats"
             let newDir =  docsDir.appendingPathComponent(importChatsDir)
             
             if !fileManager.fileExists(atPath: (newDir.path)) {
