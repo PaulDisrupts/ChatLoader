@@ -16,8 +16,10 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     var loadingProgress:chatLoadingAlert?   //object (with UIAlertController) to update loading progress
     var fp:fileProcessor?                   //object to process the imported .zip (_chat.txt) file and save to CoreData
     
-    var tableChats: UITableView?
     let cellIdentifier = "cellLoadedChat"//
+    
+    let buttonLoadChatHeight: CGFloat = 40
+    let labelTotalChats_MessagesHeight: CGFloat = 30
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -26,43 +28,44 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     
     
     //MARK: IBOutlets
+    @IBOutlet weak var tableChats: UITableView!
+    
     @IBOutlet weak var labelTotalChats: UILabel!
     
     @IBOutlet weak var labelTotalMessages: UILabel!
     
-    @IBOutlet weak var labelLastChatLoadDate: UILabel!
-    
-    @IBOutlet weak var labelLastChatName: UILabel!
-    
-    @IBOutlet weak var labelLastChatMessages: UILabel!
-    
     @IBOutlet weak var buttonLoadChat: UIButton! {
         didSet {
             #if !targetEnvironment(simulator)
-                buttonLoadChat.isHidden = true
+            buttonLoadChat.setTitle("How to load a chat file", for: .normal)
             #endif
         }
     }
     
     @IBAction func buttonLoadChatPressed(_ sender: UIButton) {
         
-        if loadFileForSimulator() {
-            loadFileFromURL(fileURL: openWithURL!)
-            
-        } else {
-            
-            let importedChatsDir = Helper.app.importedChatsURL().path
-            
-            let alertController = UIAlertController(title: ".zip file not found", message: "Place the .zip file in:\n\(importedChatsDir)", preferredStyle: .alert)
-            
-            let actionOK = UIAlertAction(title: "Copy directory path", style: .default) { (action) in
-                UIPasteboard.general.string = importedChatsDir
+        #if !targetEnvironment(simulator)
+            presentTutorial()
+        #else
+        
+            if loadFileForSimulator() {
+                loadFileFromURL(fileURL: openWithURL!)
+                
+            } else {
+                
+                let importedChatsDir = Helper.app.appDirectoryURL().path
+                
+                let alertController = UIAlertController(title: ".zip file not found", message: "Place the .zip file in:\n\(importedChatsDir)", preferredStyle: .alert)
+                
+                let actionOK = UIAlertAction(title: "Copy directory path", style: .default) { (action) in
+                    UIPasteboard.general.string = importedChatsDir
+                }
+                
+                alertController.addAction(actionOK)
+                
+                self.present(alertController, animated: true) {}
             }
-            
-            alertController.addAction(actionOK)
-            
-            self.present(alertController, animated: true) {}
-        }
+        #endif
     }
 
     
@@ -71,15 +74,19 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
+        tableChats.dataSource = self
+        tableChats.delegate = self
+        tableChats.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
+        
         addNotifications()
         setFetchedResultsController()
-        setupTableChats()
+        setupAutolayout()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        updateChatStats(recentChat: false)
+        updateChatStats()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -112,30 +119,45 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     }
     
     
-    func setupTableChats() {
+    func setupAutolayout() {
         
-        tableChats = UITableView(frame: .zero, style: .plain)
-        tableChats!.translatesAutoresizingMaskIntoConstraints = false
+        tableChats.backgroundColor = .systemGray6
+        tableChats.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(tableChats)
         
-        
-        tableChats!.dataSource = self
-        tableChats!.delegate = self
-        tableChats!.backgroundColor = UIColor.green
-//        tableChats!.tableFooterView = UIView()
-        
-        //register reusable cell
-        tableChats!.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
-        
-        self.view.addSubview(tableChats!)
+        buttonLoadChat.backgroundColor = .systemGray6
+        buttonLoadChat.translatesAutoresizingMaskIntoConstraints = false
         self.view.bringSubviewToFront(buttonLoadChat)
+        
+        labelTotalChats.backgroundColor = .systemGray6
+        labelTotalChats.translatesAutoresizingMaskIntoConstraints = false
         self.view.bringSubviewToFront(labelTotalChats)
+        
+        labelTotalMessages.backgroundColor = .systemGray6
+        labelTotalMessages.translatesAutoresizingMaskIntoConstraints = false
         self.view.bringSubviewToFront(labelTotalMessages)
         
         NSLayoutConstraint.activate([
-            tableChats!.topAnchor.constraint(equalTo: view.topAnchor),
-            tableChats!.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableChats!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableChats!.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            
+            buttonLoadChat.topAnchor.constraint(equalToSystemSpacingBelow: self.view.safeAreaLayoutGuide.topAnchor, multiplier: 1),
+            buttonLoadChat.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
+            buttonLoadChat.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor),
+            buttonLoadChat.heightAnchor.constraint(equalToConstant: buttonLoadChatHeight),
+                        
+            labelTotalChats.topAnchor.constraint(equalToSystemSpacingBelow: buttonLoadChat.bottomAnchor, multiplier: 1),
+            labelTotalChats.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
+            labelTotalChats.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor),
+            labelTotalChats.heightAnchor.constraint(equalToConstant: labelTotalChats_MessagesHeight),
+            
+            labelTotalMessages.topAnchor.constraint(equalToSystemSpacingBelow: labelTotalChats.bottomAnchor, multiplier: 1),
+            labelTotalMessages.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
+            labelTotalMessages.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor),
+            labelTotalMessages.heightAnchor.constraint(equalToConstant: labelTotalChats_MessagesHeight),
+            
+            tableChats.topAnchor.constraint(equalToSystemSpacingBelow:labelTotalMessages.bottomAnchor, multiplier: 1),
+            tableChats.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableChats.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableChats.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
     }
     
@@ -145,7 +167,9 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         if !isLoading {
             isLoading = true
             
-            self.tableChats?.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+            if getTotalChats() > 0 {
+                self.tableChats?.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+            }
             
             //process the .zip file
             fp = fileProcessor(delegate: self, inputFile: fileURL)
@@ -154,14 +178,8 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     }
     
     
-    func updateChatStats(recentChat: Bool) {
-        
-        if recentChat {
-            labelLastChatLoadDate.text = "Last chat load date: \(getLastChatDate())"
-            labelLastChatName.text = "Last chat name: \(getLastChatName())"
-            labelLastChatMessages.text = "Last chat # of messages: \(Helper.app.formatNumber(number: getLastChatMessages())!)"
-        }
-        
+    func updateChatStats() {
+
         labelTotalChats.text = "Total chats: \(getTotalChats())"
         labelTotalMessages.text = "Total messages: \(Helper.app.formatNumber(number: getTotalMessages())!)"
     }
@@ -205,6 +223,11 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     }
     
     
+    func presentTutorial() {
+        
+    }
+    
+    
     //MARK: UITableview delegate
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
@@ -233,7 +256,9 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         
         let selectedChat = fetchedResultsController.object(at: indexPath)
         let title = selectedChat.chatName!
-        let message = "\(selectedChat.chatID)\n\(selectedChat.dateLoad!)\n\(selectedChat.senderList!)"
+        let numberOfMessages = Helper.app.formatNumber(number: getNumberOfMessagesInChat(selectedChat: selectedChat))
+        
+        let message = "chatID: \(selectedChat.chatID)\ndateLoad: \(Helper.app.converNSDateToLocalDate(inputDate: selectedChat.dateLoad!))\n# of messages: \(numberOfMessages!)\nsenderList:\n\(selectedChat.senderList!)"
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         let actionOK = UIAlertAction(title: "OK", style: .default) { (action) in
@@ -285,7 +310,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         default: break
         }
         
-        self.updateChatStats(recentChat: true)
+        self.updateChatStats()
     }
     
     
@@ -386,54 +411,25 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         return ""
     }
     
-    
-    func getLastChatMessages() -> Int {
-        
-        if let lastChat = getLastChat() {
-            
-            lastChat.printChat()
-            
-            let fetchRequest:NSFetchRequest = Message.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "fromChat == %@", lastChat)
-            
-            do {
-                let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
-                
-//                let tempMessage = messageResults.first
-//                let msgID = tempMessage!.messageID
-//                print("last msgID: \(msgID)")
-                
-                return messageResults.count
-                
-            } catch let error as NSError {
-                print("func getLastChatMessages() -> Int { \(error.localizedDescription)")
-            }
-        }
-        
-        return 0
-    }
-    
-    
-    func getLastChat() -> Chat? {
-        
-        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "chatID", ascending: false)]
-        fetchRequest.fetchLimit = 1
+    func getNumberOfMessagesInChat(selectedChat: Chat) -> Int {
         
         do {
-            let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]
+            let fetchRequest2:NSFetchRequest = Message.fetchRequest()
+            fetchRequest2.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
             
-            if chatResults.count == 1 {
-                return chatResults.first
-            }
+            let messageResults = try context.fetch(fetchRequest2 as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
+            
+            return messageResults.count
             
         } catch let error as NSError {
-            print("func getLastChat() -> Chat? { \(error.localizedDescription)")
+            print("ERROR func messagesInSelectedChat(selectedChat:Chat) -> Int {: \(error.localizedDescription)")
+            
+            return 0
         }
-        
-        return nil
     }
     
+    
+
     
     func printAttachmentTypes() {
         let fetchRequest:NSFetchRequest = Message.fetchRequest()
@@ -498,7 +494,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             self.loadingProgress = nil
             self.fp = nil
             
-            self.updateChatStats(recentChat: true)
+            self.updateChatStats()
         })
     }
  
