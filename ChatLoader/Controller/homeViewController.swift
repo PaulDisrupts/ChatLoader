@@ -47,24 +47,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         #if !targetEnvironment(simulator)
             presentTutorial()
         #else
-        
-            if loadFileForSimulator() {
-                loadFileFromURL(fileURL: openWithURL!)
-                
-            } else {
-                
-                let importedChatsDir = Helper.app.appDirectoryURL().path
-                
-                let alertController = UIAlertController(title: ".zip file not found", message: "Place the .zip file in:\n\(importedChatsDir)", preferredStyle: .alert)
-                
-                let actionOK = UIAlertAction(title: "Copy directory path", style: .default) { (action) in
-                    UIPasteboard.general.string = importedChatsDir
-                }
-                
-                alertController.addAction(actionOK)
-                
-                self.present(alertController, animated: true) {}
-            }
+            loadFileForSimulator()
         #endif
     }
 
@@ -111,10 +94,17 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
 
             // get the URL from the NSNotification
             if let url = notification.userInfo?["URLtoProcess"] as? URL {
-                self.loadFileFromURL(fileURL: url)
                 
-                //Remove any modal VCs presented by self/pop to root view controller
-            }
+                if !self.isLoading {
+                    //if file is not currently being loaded, dismiss any modal VCs presented by self/pop to root view controller
+                    self.dismiss(animated: true)    //does this dismiss the UIAlert?
+                    
+                    self.loadFileFromURL(fileURL: url)
+                    
+                } else {
+                    //remove the new URL
+                }
+            }//if let url = notification.userInfo?["URLtoProcess"] as? URL {
         }
     }
     
@@ -157,7 +147,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             tableChats.topAnchor.constraint(equalToSystemSpacingBelow:labelTotalMessages.bottomAnchor, multiplier: 1),
             tableChats.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableChats.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableChats.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableChats.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
     
@@ -186,8 +176,8 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     
     
     //iOS simulator - load file on the macOS file system (ie put .zip file in ../Library/ChatLoaderPrivateDocuments/) by assigning openWithURL
-    func loadFileForSimulator() -> Bool {
-        //check directory /ChatLoader for .zip files
+    func loadFileForSimulator() {
+        //check directory/ChatLoader for .zip files
         
         var chatFileFound:Bool = false
         
@@ -209,22 +199,48 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                 }
             }
             
-            if !chatFileFound {
+            
+            if chatFileFound {
+                loadFileFromURL(fileURL: openWithURL!)
+                
+            } else {
                 print("Place the exported whatsapp chat .zip file in directory:")
                 print(chatLoaderURL)
+                
+                let alertController = UIAlertController(title: ".zip file not found", message: "Place the .zip file in:\n\(chatLoaderURL.path)", preferredStyle: .alert)
+                
+                let actionOK = UIAlertAction(title: "Copy directory path", style: .default) { (action) in
+                    UIPasteboard.general.string = chatLoaderURL.path
+                }
+                
+                alertController.addAction(actionOK)
+                
+                self.present(alertController, animated: true) {}
             }
             
         } catch let error as NSError {
-            print("WARNING: func loadFileForSimulator() { no files found! \(error)")
+            print("ERROR: homeViewControllerloadFileForSimulator(): let fileNames = try fileManager.contentsOfDirectory(atPath: chatLoaderURL.path) as [String]?\n\t\(error)")
         }
-
-        
-        return chatFileFound
     }
     
     
     func presentTutorial() {
         
+        let vc = tutorialViewController()
+//        let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "homeViewController") as! homeViewController
+        
+        if #available(iOS 15.0, *) {
+            if let sheet = vc.sheetPresentationController {
+                sheet.detents = [.large()]
+                
+                sheet.prefersGrabberVisible = true
+            }
+        } else {
+            // Fallback on earlier versions
+            vc.modalPresentationStyle = .pageSheet
+        }
+        
+        self.present(vc, animated: true, completion: nil)
     }
     
     
@@ -329,7 +345,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         do {
             try fetchedResultsController.performFetch()
         } catch let error as NSError {
-            print("ERROR: func setFetchedResultsController() {; try fetchedResultsController.performFetch(): \(error)")
+            print("ERROR: homeViewController.setFetchedResultsController(): try fetchedResultsController.performFetch()\n\t\(error)")
         }
     }
     
@@ -344,7 +360,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             return messageResults.count
             
         } catch let error as NSError {
-            print("func getTotalMessages() -> Int { \(error.localizedDescription)")
+            print("ERROR: homeViewController.getTotalMessages(): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
         }
         
         return 0
@@ -361,7 +377,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             return chatResults.count
             
         } catch let error as NSError {
-            print("func getTotalChats() -> Int { \(error.localizedDescription)")
+            print("ERROR: homeViewController.getTotalChats(): let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]\n\t\(error)")
         }
         
         return 0
@@ -382,7 +398,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             }
             
         } catch let error as NSError {
-            print("func getLastChatDate() -> String { \(error.localizedDescription)")
+            print("ERROR: homeViewController.getLastChatDate(): let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]\n\t\(error)")
         }
         
         return ""
@@ -405,7 +421,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             }
             
         } catch let error as NSError {
-            print("func getLastChatName() -> String { \(error.localizedDescription)")
+            print("ERROR: homeViewController.getLastChatName(): let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]\n\t\(error)")
         }
         
         return ""
@@ -422,7 +438,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             return messageResults.count
             
         } catch let error as NSError {
-            print("ERROR func messagesInSelectedChat(selectedChat:Chat) -> Int {: \(error.localizedDescription)")
+            print("ERROR: homeViewController.getNumberOfMessagesInChat(selectedChat: Chat): let messageResults = try context.fetch(fetchRequest2 as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
             
             return 0
         }

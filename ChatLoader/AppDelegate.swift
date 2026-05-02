@@ -37,7 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 do {
                     try fileManager.createDirectory(atPath: (newDir.path), withIntermediateDirectories: true, attributes: nil)
                 } catch let error as NSError {
-                    print("ERROR: try fileManager.createDirectoryAtPath(newDir.path!, withIntermediateDirectories: true, attributes: nil): Failed to create dir at \(String(describing: newDir.path)); error: \(error.localizedDescription)")
+                    print("ERROR: AppDelegate.application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?): try fileManager.createDirectory(atPath: (newDir.path), withIntermediateDirectories: true, attributes: nil)\n\t\(error)")
                 }
             }
         }
@@ -83,7 +83,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                fatalError("Unresolved error \(error), \(error.userInfo)")
+                fatalError("ERROR: AppDelegate.application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>):  container.loadPersistentStores(completionHandler: { (storeDescription, error) in\n\t\(error), \(error.userInfo)")
             }
         })
         return container
@@ -100,7 +100,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
                 let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                fatalError("ERROR: AppDelegate.saveContext(): try context.save()\(nserror), \(nserror.userInfo)")
             }
         }
     }

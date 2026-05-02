@@ -140,7 +140,7 @@ class fileProcessor:NSObject {
                 try fileManager.createDirectory(atPath: (tempDirURL!.path), withIntermediateDirectories: true, attributes: nil)
                 
             } catch let error as NSError {
-                print("ERROR: try fileManager.createDirectoryAtPath(newDir.path!, withIntermediateDirectories: true, attributes: nil): Failed to create dir at \(String(describing: tempDirURL!.path)); error: \(error.localizedDescription)")
+                print("ERROR: fileProcessor.unzipExportedFile(): try fileManager.createDirectory(atPath: (tempDirURL!.path), withIntermediateDirectories: true, attributes: nil)\n\t\(error)")
             }
         }
         
@@ -175,13 +175,13 @@ class fileProcessor:NSObject {
                         print("\nfunc unzipExportedFile(): removed file: \(tempURL.lastPathComponent)")
                         
                     } catch let error as NSError {
-                        print("ERROR: func unzipExportedFile(); try fileManager.removeItemAtPath(tempURL.path!): \(error.localizedDescription)")
+                        print("ERROR: fileProcessor.unzipExportedFile(): try fileManager.removeItem(atPath: tempURL.path)\n\t\(error)")
                     }
                 }
             }//for f in unzippedFiles! {
             
         } catch let error as NSError {
-            print("ERROR: func unzipExportedFile(); let unzippedFiles = try fileManager.contentsOfDirectoryAtPath(inboxDir.path!) as [String]!: \(error)")
+            print("ERROR: fileProcessor.unzipExportedFile(): let unzippedFiles = try fileManager.contentsOfDirectory(atPath: tempDirURL!.path) as [String]?\n\t\(error)")
         }
     }
     
@@ -646,7 +646,7 @@ class fileProcessor:NSObject {
             
 
         } catch let error as NSError {
-            print("ERROR: try fileManager.moveItem(at: tempDirURL!, to: importedChatsURL!.appendingPathComponent(String(directoryName)))\nFailed to rename dir at \(String(describing: tempDirURL!.path));\nError code: \(error.localizedDescription)")
+            print("ERROR: fileProcessor.renameDirectory(): try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(Helper.app.formatChatIDToDirectoryName(chatID: Int(self.selectedChat!.chatID))))\n\t\(error)")
         }
     }
 
@@ -673,7 +673,7 @@ class fileProcessor:NSObject {
                 try fileManager.removeItem(at: tempDirURL!)
                 
             } catch let error as NSError {
-                print("ERROR: try fileManager.removeItem(at: tempDirURL!.path)\nFailed to remove file \( inputFileURL!.path));\nError code: \(error.localizedDescription)")
+                print("ERROR: fileProcessor.deleteFiles(tempDirectory:Bool): try fileManager.removeItem(at: tempDirURL!)\n\t\(error)")
             }
         
         } else {
@@ -687,20 +687,19 @@ class fileProcessor:NSObject {
                 }
                 
             } catch let error as NSError {
-                print("ERROR: func deleteFiles(tempDirectory:Bool); try fileManager.removeItemAtPath(fileToProcessURL!.path!): \(error.localizedDescription)")
+                print("ERROR: fileProcessor.deleteFiles(tempDirectory:Bool): try fileManager.removeItem(atPath: fileToProcessURL!.path)\n\t\(error)")
             }
         }
         
         
         //remove the imported .zip file if it is *not* the simulator, ie from the device's 'Inbox'
         #if !targetEnvironment(simulator)
-//            print("#if !targetEnvironment(simulator)")
         
             do {
                 try fileManager.removeItem(at: inputFileURL!)
                 
             } catch let error as NSError {
-                print("ERROR: try fileManager.removeItem(at: inputFileURL!)\nFailed to remove file \(String(describing: inputFileURL!.path));\nError code: \(error.localizedDescription)")
+                print("ERROR: fileProcessor.deleteFiles(tempDirectory:Bool): try fileManager.removeItem(at: inputFileURL!)\n\t\(error)")
             }
         
         #endif
@@ -736,12 +735,12 @@ class fileProcessor:NSObject {
                         })
                         
                     } catch let error as NSError {
-                        print("ERROR: templateModalPopoverViewController.swift; func saveContexts(); try self.childContext.parentContext?.save(): \(error)")
+                        print("ERROR: fileProcessor.saveContexts(): try self.childContext.parent?.save()\n\t\(error)")
                     }
                 })
                 
             } catch let error as NSError {
-                print("ERROR: templateModalPopoverViewController; func saveContexts(); try childContext.save(): \(error)")
+                print("ERROR: fileProcessor.saveContexts(): try childContext.save()\n\t\(error)")
             }
         }
     }

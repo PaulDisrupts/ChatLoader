@@ -849,7 +849,7 @@ class Helper {
             }
             
         } catch let error as NSError {
-            print("WARNING: getImportedFileURLFromInbox() { no files found! \(error)")
+            print("ERROR: Helper.getImportedFileURLFromInbox(): let fileNames = try fileManager.contentsOfDirectory(atPath: inboxDirectoryURL().path) as [String]?\n\t\(error)")
         }
         
         return url
@@ -873,7 +873,7 @@ class Helper {
             }
             
         } catch let error as NSError {
-            print("WARNING: func printFilesInbox() { no files found! \(error)")
+            print("ERROR: Helper.printFilesInbox(): let fileNames = try fileManager.contentsOfDirectory(atPath: inboxDirectoryURL().path) as [String]?\n\t\(error)")
         }
     }
     
@@ -902,7 +902,7 @@ extension URL {
         do {
             return try FileManager.default.attributesOfItem(atPath: path)
         } catch let error as NSError {
-            print("FileAttribute error: \(error)")
+            print("ERROR: Helper.swift: extension URL: var attributes: [FileAttributeKey : Any]?: return try FileManager.default.attributesOfItem(atPath: path)\n\t\(error)")
         }
         return nil
     }
