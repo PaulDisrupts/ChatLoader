@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  homeViewController.swift
 //  ChatLoader
 //
 //  Created by Paul Michael Whiten on 11/2/21.
@@ -97,13 +97,20 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                 
                 if !self.isLoading {
                     //if file is not currently being loaded, dismiss any modal VCs presented by self/pop to root view controller
-                    self.dismiss(animated: true)    //does this dismiss the UIAlert?
+                    self.dismiss(animated: true)
                     
                     self.loadFileFromURL(fileURL: url)
                     
                 } else {
-                    //remove the new URL
-                }
+                    //file currenlty being loaded, remove the new URL
+                    let fileManager = FileManager()
+                    
+                    do {
+                        try fileManager.removeItem(at: url)
+                    } catch let error as NSError {
+                        print("ERROR: homeViewController.addNotifications(): try fileManager.removeItem(at: url)\n\t\(error)")
+                    }
+                }//} else {
             }//if let url = notification.userInfo?["URLtoProcess"] as? URL {
         }
     }
