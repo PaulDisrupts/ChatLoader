@@ -13,13 +13,14 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     //MARK: Class variables
     var openWithURL:URL?                    //set by NSNotification .userInfo?["URLtoProcess"]
     var isLoading:Bool = false              //used to stop two files being loaded at once
-    var loadingProgress:chatLoadingAlert?   //object (with UIAlertController) to update loading progress
+    var loadingProgress:loadingAlert?       //UIAlertController subclass to update loading progress
+    
     var fp:fileProcessor?                   //object to process the imported .zip (_chat.txt) file and save to CoreData
     
-    let cellIdentifier = "cellLoadedChat"//
+    let cellIdentifier = "cellLoadedChat"
     
-    let buttonLoadChatHeight: CGFloat = 40
-    let labelTotalChats_MessagesHeight: CGFloat = 30
+    let buttonLoadChatHeight: CGFloat = 44              //default iOS button height
+    let labelTotalChats_MessagesHeight: CGFloat = 30    
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -96,13 +97,20 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             if let url = notification.userInfo?["URLtoProcess"] as? URL {
                 
                 if !self.isLoading {
-                    //if file is not currently being loaded, dismiss any modal VCs presented by self/pop to root view controller
+                    //if a previous file is *not* currently being loaded
+                    
+                    //dismiss any modal VCs presented by self/pop to root view controller
                     self.dismiss(animated: true)
+                    
+                    //,deselect any rows
+                    if self.tableChats.indexPathForSelectedRow != nil {
+                        self.tableChats.deselectRow(at: self.tableChats.indexPathForSelectedRow!, animated: true)
+                    }
                     
                     self.loadFileFromURL(fileURL: url)
                     
                 } else {
-                    //file currenlty being loaded, remove the new URL
+                    //a previous file is currently being loaded, deleted the new file
                     let fileManager = FileManager()
                     
                     do {
@@ -110,8 +118,8 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                     } catch let error as NSError {
                         print("ERROR: homeViewController.addNotifications(): try fileManager.removeItem(at: url)\n\t\(error)")
                     }
-                }//} else {
-            }//if let url = notification.userInfo?["URLtoProcess"] as? URL {
+                } //} else
+            } //if let url = notification.userInfo?["URLtoProcess"] as? URL
         }
     }
     
@@ -137,24 +145,24 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         NSLayoutConstraint.activate([
             
             buttonLoadChat.topAnchor.constraint(equalToSystemSpacingBelow: self.view.safeAreaLayoutGuide.topAnchor, multiplier: 1),
-            buttonLoadChat.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
-            buttonLoadChat.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor),
+            buttonLoadChat.leadingAnchor.constraint(equalTo: self.view.readableContentGuide.leadingAnchor),
+            buttonLoadChat.trailingAnchor.constraint(equalTo: self.view.readableContentGuide.trailingAnchor),
             buttonLoadChat.heightAnchor.constraint(equalToConstant: buttonLoadChatHeight),
                         
             labelTotalChats.topAnchor.constraint(equalToSystemSpacingBelow: buttonLoadChat.bottomAnchor, multiplier: 1),
-            labelTotalChats.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
-            labelTotalChats.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor),
+            labelTotalChats.leadingAnchor.constraint(equalTo: self.view.readableContentGuide.leadingAnchor),
+            labelTotalChats.trailingAnchor.constraint(equalTo: self.view.readableContentGuide.trailingAnchor),
             labelTotalChats.heightAnchor.constraint(equalToConstant: labelTotalChats_MessagesHeight),
             
             labelTotalMessages.topAnchor.constraint(equalToSystemSpacingBelow: labelTotalChats.bottomAnchor, multiplier: 1),
-            labelTotalMessages.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
-            labelTotalMessages.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor),
+            labelTotalMessages.leadingAnchor.constraint(equalTo: self.view.readableContentGuide.leadingAnchor),
+            labelTotalMessages.trailingAnchor.constraint(equalTo: self.view.readableContentGuide.trailingAnchor),
             labelTotalMessages.heightAnchor.constraint(equalToConstant: labelTotalChats_MessagesHeight),
             
             tableChats.topAnchor.constraint(equalToSystemSpacingBelow:labelTotalMessages.bottomAnchor, multiplier: 1),
-            tableChats.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableChats.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableChats.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            tableChats.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            tableChats.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            tableChats.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
         ])
     }
     
@@ -234,7 +242,6 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     func presentTutorial() {
         
         let vc = tutorialViewController()
-//        let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "homeViewController") as! homeViewController
         
         if #available(iOS 15.0, *) {
             if let sheet = vc.sheetPresentationController {
@@ -463,12 +470,10 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     
     //MARK: protocolFileProcessor
     func processingStarted() {
-        //loadingProgress:chatLoadingAlert? to show progress of loading chat
-        loadingProgress = chatLoadingAlert()
         
-        //UIAlertController (from loadingProgress:chatLoadingAlert?) to show progress of loading chat
-        let alert = loadingProgress!.setup()
-        self.present(alert, animated: true)
+        //loadingAlert to show progress of loading chat
+        loadingProgress = loadingAlert()
+        self.present(loadingProgress!, animated: true)
     }
     
     

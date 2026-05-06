@@ -32,6 +32,14 @@ class tutorialViewController: UIViewController {
             playerController.view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             playerController.view.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
         ])
+        
+        //NOTE: When using sheetPresentationController and modalPresentationStyle = .pageSheet for a UIViewController, the self.view.safeAreaLayoutGuide.topAnchor does not account for the "prefersGrabberVisible", ie self.view extends to the top of the "presented area"
+        //Optionally set the variable "spacer" to a value, however this then applies to landscape layout
+        /*
+         playerController.view.frame = self.view.frame
+        let spacer:CGFloat = 20
+        playerController.view.frame = CGRect(x: self.view.frame.origin.x, y: self.view.frame.origin.y + spacer, width: self.view.frame.width, height: self.view.frame.height - spacer)
+         */
     }
     
     override func viewDidAppear(_ animated: Bool) {

@@ -178,7 +178,7 @@ class fileProcessor:NSObject {
                         print("ERROR: fileProcessor.unzipExportedFile(): try fileManager.removeItem(atPath: tempURL.path)\n\t\(error)")
                     }
                 }
-            }//for f in unzippedFiles! {
+            } //for f in unzippedFiles!
             
         } catch let error as NSError {
             print("ERROR: fileProcessor.unzipExportedFile(): let unzippedFiles = try fileManager.contentsOfDirectory(atPath: tempDirURL!.path) as [String]?\n\t\(error)")
@@ -246,14 +246,14 @@ class fileProcessor:NSObject {
                                             validFileFormat = true
                                             processTextFile(inputFile: textFileContents, dateTimeDelimiter: dateTimeDelimiter)
                                         }
-                                    }//if let indexSenderMessage = inputLine.range(of: ": ") {
-                                }//if indexDateTime!.upperBound<indexTimeSender.lowerBound {
-                            }//if let indexTimeSender = inputLine.range(of: "] ") {
-                        }//if indexDate.upperBound<indexDateTime!.lowerBound {
-                    }//if indexDatetime != nil {
-                }//if let indexDate = inputLine.range(of: "["){
-            }//if let inputLine = textFileContents.first {
-        }//if let textFileContents = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n") {
+                                    } //if let indexSenderMessage = inputLine.range(of: ": ")
+                                } //if indexDateTime!.upperBound<indexTimeSender.lowerBound
+                            } //if let indexTimeSender = inputLine.range(of: "] ")
+                        } //if indexDate.upperBound<indexDateTime!.lowerBound
+                    } //if indexDatetime != nil
+                } //if let indexDate = inputLine.range(of: "[")
+            } //if let inputLine = textFileContents.first
+        } //if let textFileContents = (try? String(contentsOf: fileToProcessURL!, encoding: String.Encoding.utf8))?.components(separatedBy: "\r\n")
         
         //.txt file format of fileToProcessURL! not valid format
         if !validFileFormat {
@@ -396,7 +396,7 @@ class fileProcessor:NSObject {
                     }
                 }
                             
-            }//for inputLine in inputFile {
+            } //for inputLine in inputFile
             
             //loading file complete, at least one message processed, ie. inputFile:[String].first , as .txt file format validated in validateTextFileFormat()
             NSLog("**END: process file")
