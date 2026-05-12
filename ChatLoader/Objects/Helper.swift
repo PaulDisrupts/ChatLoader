@@ -487,12 +487,12 @@
 */
 
 /*
- UserDefaults (set in AppDelegate)
+ UserDefaults
  *********************************
  
- UserDefaults.standard.bool(forKey: "hasBeenLaunched")      //first time launch to set initial persistent variables
- UserDefaults.standard.set("0.1", forKey: "versionNumber")  //incremented on version updates
- UserDefaults.standard.integer(forKey: "totalChatsLoaded")  //counter for all-tim number of chats loaded; cannot use current number of chats in case of deleted chats
+ UserDefaults.standard.bool(forKey: "hasBeenLaunched")      //first time launch to set initial persistent variables, set in AppDelegate
+ UserDefaults.standard.double(forKey: "versionNumber")      //incremented on version updates, set in AppDelegate
+ UserDefaults.standard.integer(forKey: "totalChatsLoaded")  //counter for all-time number of chats loaded; cannot use current number of chats in case of deleted chats, set in AppDelegate, incremented in fileProcessor
  
 */
  
@@ -615,20 +615,27 @@ class Helper {
     let animationTime: Double = 0.25
     var printToggle: Bool = true
     
-    let colorPrimary = UIColor(red: 224.0/255, green: 31.0/255, blue: 31.0/255, alpha: 1) // hex: #E01F1F
-    let colorPrimaryCellSelected = UIColor(red: 250.0/255, green: 180.0/255, blue: 180.0/255, alpha: 0.8) // hex: FAB3B3
+    let colorPrimary = UIColor(red: 165.0/255, green: 42.0/255, blue: 213.0/255, alpha: 1) // hex: #a52ad5
+    let colorPrimaryCellSelected = UIColor(red: 213.0/255, green: 42.0/255, blue: 176.0/255, alpha: 0.8) // hex: #d52ab0
     
-    let colorSecondary = UIColor(red: 16.0/255, green: 209.0/255, blue: 224.0/255, alpha: 1) //10D1E0
-    let colorTertiary = UIColor(red: 135.0/255, green: 16.0/255, blue: 224.0/255, alpha: 1) //8710E0
+    let colorSecondary = UIColor(red: 90.0/255, green: 213.0/255, blue: 42.0/255, alpha: 1) // hex: #5ad52a
+    let colorTertiary = UIColor(red: 213.0/255, green: 139.0/255, blue: 42.0/255, alpha: 1) //hex: #d58b2a
     
-    let notificationRawValue = "copyToAppFile"  //used for notification when ChatLoader launched/opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
+    let notificationRawValue = "copyToAppFile"  //used for notification when ChatLoader launched/opened from background via
+    let copytoAppURL: String = "copytoAppURL"   //identifier for the URL of imported .zip filesUIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
     let whatsappZipFilePrefix = "WhatsApp Chat - "
     let groupMessageSender = "group_status_update"  //used when cannot distinguish between sender and message; assume that it is a group status update
     
     //directories
-    let appDirectory: String = "ChatLoaderPrivateDocuments"
-    let importedChatsDirectory: String = "importedChats"
-    let tempDirectory: String = "importedChats/tempDir"
+    let appDirectory: String = "ChatLoaderPrivateDocuments" //../Library/ChatLoaderPrivateDocuments/
+    let importedChatsDirectory: String = "importedChats"    //../Library/ChatLoaderPrivateDocuments/importedChats/
+    let tempDirectory: String = "tempDir"     //../Library/ChatLoaderPrivateDocuments/importedChats/tempDir/
+    
+    //UserDefaults.standard keys
+    let keyHasBeenLaunched: String = "hasBeenLaunched"      //first time launch to set initial persistent variables, set in AppDelegate
+    let keyVersionNumber: String = "versionNumber"          //incremented on version updates, set in AppDelegate
+    let keyTotalChatsLoaded: String = "totalChatsLoaded"    //counter for all-time number of chats loaded; cannot use current number of chats in case of deleted chats, set in AppDelegate, incremented in fileProcessor
+    
     
     //MARK: date and formatting functions
     func getLocale() -> String {
@@ -724,16 +731,16 @@ class Helper {
     
     //MARK: directory functions
     func testPrintURLs() {
+        
         printToggle = true
         
         var tempURL = documentsDirectoryURL()
         tempURL = libraryDirectoryURL()
-        tempURL = tempDirectoryURL()
+        tempURL = defaultTemporaryDirectoryURL()
         tempURL = inboxDirectoryURL()
         tempURL = appDirectoryURL()
         tempURL = importedChatsURL()
         tempURL = tempDirURL()
-        
                 
         printToggle = false
         
@@ -769,12 +776,12 @@ class Helper {
         return url
     }
     
-    func tempDirectoryURL() -> URL {
+    func defaultTemporaryDirectoryURL() -> URL {
         
         let url = FileManager.default.temporaryDirectory
         
         if printToggle {
-            print("func tempDirectoryURL() -> URL {\n\t\(url.path)")
+            print("func defaultTemporaryDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -819,7 +826,7 @@ class Helper {
     func tempDirURL() -> URL {
         
         //../Library/ChatLoaderPrivateDocuments/importedChats/tempDir/
-        let url = appDirectoryURL().appendingPathComponent(tempDirectory)
+        let url = importedChatsURL().appendingPathComponent(tempDirectory)
         
         if printToggle {
             print("func tempDirURL() -> URL {\n\t\(url.path)")
@@ -886,6 +893,16 @@ class Helper {
         print("func formatChatIDToDirectoryName(chatID:Int) -> \(tempStr)")
         
         return tempStr
+    }
+    
+    //MARK: misc functions
+    func getNextChatID() -> Int {
+        return UserDefaults.standard.integer(forKey: self.keyTotalChatsLoaded) + 1
+    }
+    
+    func incrementChatID() {
+        UserDefaults.standard.set(self.getNextChatID(), forKey: self.keyTotalChatsLoaded)
+        UserDefaults.standard.synchronize()
     }
     
 }

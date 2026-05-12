@@ -11,7 +11,7 @@ import CoreData
 class homeViewController: UIViewController, protocolFileProcessor, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     
     //MARK: Class variables
-    var openWithURL:URL?                    //set by NSNotification .userInfo?["URLtoProcess"]
+    var openWithURL:URL?                    //set by NSNotification .userInfo?[Helper.app.copytoAppURL]
     var isLoading:Bool = false              //used to stop two files being loaded at once
     var loadingProgress:loadingAlert?       //UIAlertController subclass to update loading progress
     
@@ -37,7 +37,9 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     
     @IBOutlet weak var buttonLoadChat: UIButton! {
         didSet {
-            #if !targetEnvironment(simulator)
+            buttonLoadChat.setTitleColor(Helper.app.colorPrimary, for: .normal)
+            
+#if !targetEnvironment(simulator)
             buttonLoadChat.setTitle("How to load a chat file", for: .normal)
             #endif
         }
@@ -94,7 +96,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
 
             // get the URL from the NSNotification
-            if let url = notification.userInfo?["URLtoProcess"] as? URL {
+            if let url = notification.userInfo?[Helper.app.copytoAppURL] as? URL {
                 
                 if !self.isLoading {
                     //if a previous file is *not* currently being loaded
@@ -119,7 +121,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                         print("ERROR: homeViewController.addNotifications(): try fileManager.removeItem(at: url)\n\t\(error)")
                     }
                 } //} else
-            } //if let url = notification.userInfo?["URLtoProcess"] as? URL
+            } //if let url = notification.userInfo?[Helper.app.copytoAppURL] as? URL
         }
     }
     
@@ -272,6 +274,9 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
      
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+        let selectedView = UIView()
+        selectedView.backgroundColor = Helper.app.colorPrimaryCellSelected
+        cell.selectedBackgroundView = selectedView
         
         let chat = fetchedResultsController.object(at: indexPath)
         
@@ -295,6 +300,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             tableView.deselectRow(at: indexPath, animated: true)
         }
         
+        actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
         alertController.addAction(actionOK)
         
         self.present(alertController, animated: true)

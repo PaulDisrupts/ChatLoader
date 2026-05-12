@@ -14,33 +14,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        if !UserDefaults.standard.bool(forKey: "hasBeenLaunched") {
-            //first time ChatLoader launched, set persistent variables
+        if !UserDefaults.standard.bool(forKey: Helper.app.keyHasBeenLaunched) {
+            //first time ChatLoader launched; set persistent variables, create file directory
             
-            UserDefaults.standard.set(true, forKey: "hasBeenLaunched")
-            UserDefaults.standard.set(0, forKey: "totalChatsLoaded")
-            UserDefaults.standard.set("0.2", forKey: "versionNumber")
-        }
-        
-        //create directory structure, ie. ../Library/ChatLoaderPrivateDocuments/importedChats/
-        if let docsDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first as URL? {
+            UserDefaults.standard.set(true, forKey: Helper.app.keyHasBeenLaunched)
+            UserDefaults.standard.set("0.2", forKey: Helper.app.keyVersionNumber)
+            UserDefaults.standard.set(0, forKey: Helper.app.keyTotalChatsLoaded)
+            UserDefaults.standard.synchronize()
             
-            //create directory structure
+            
+            //create directory structure, ie. ../Library/ChatLoaderPrivateDocuments/importedChats/
             let fileManager = FileManager()
             
-            //"importedChats" directory: each chat has a sub-folder named as chat ID
-            let importChatsDir = Helper.app.appDirectory + "/" + Helper.app.importedChatsDirectory  //ie "ChatLoaderPrivateDocuments/importedChats"
-            let newDir =  docsDir.appendingPathComponent(importChatsDir)
-            
-            if !fileManager.fileExists(atPath: (newDir.path)) {
+            if !fileManager.fileExists(atPath: (Helper.app.importedChatsURL().path)) {
                 
                 do {
-                    try fileManager.createDirectory(atPath: (newDir.path), withIntermediateDirectories: true, attributes: nil)
+                    try fileManager.createDirectory(atPath: (Helper.app.importedChatsURL().path), withIntermediateDirectories: true, attributes: nil)
                 } catch let error as NSError {
-                    print("ERROR: AppDelegate.application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?): try fileManager.createDirectory(atPath: (newDir.path), withIntermediateDirectories: true, attributes: nil)\n\t\(error)")
+                    print("ERROR: AppDelegate.application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?): try fileManager.createDirectory(atPath: (Helper.app.importedChatsURL().path), withIntermediateDirectories: true, attributes: nil)\n\t\(error)")
                 }
             }
-        }
+        }//if !UserDefaults.standard.bool(forKey: "hasBeenLaunched")
         
         return true
     }

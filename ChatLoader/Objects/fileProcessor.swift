@@ -278,7 +278,7 @@ class fileProcessor:NSObject {
         selectedChat!.chatName = chatName!
         selectedChat!.dateLoad = NSDate()
         
-        selectedChat!.chatID = Int16(UserDefaults.standard.integer(forKey: "totalChatsLoaded") + 1) // chatID saved in saveContexts(); UserDefaults.standard.integer(forKey: "totalChatsLoaded") incremented in func saveContexts() --> renameDirectory()
+        selectedChat!.chatID = Int16(Helper.app.getNextChatID()) // chatID saved in saveContexts(); all-time chat count incremented via Helper.app.incrementChatID() in func saveContexts() --> renameDirectory()
         
         
         /*
@@ -641,9 +641,7 @@ class fileProcessor:NSObject {
             try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(Helper.app.formatChatIDToDirectoryName(chatID: Int(self.selectedChat!.chatID))))
             
             //increment the all-time chat count
-            UserDefaults.standard.set(Int(self.selectedChat!.chatID), forKey: "totalChatsLoaded")
-            UserDefaults.standard.synchronize()
-            
+            Helper.app.incrementChatID()
 
         } catch let error as NSError {
             print("ERROR: fileProcessor.renameDirectory(): try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(Helper.app.formatChatIDToDirectoryName(chatID: Int(self.selectedChat!.chatID))))\n\t\(error)")

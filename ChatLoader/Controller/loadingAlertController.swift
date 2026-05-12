@@ -21,7 +21,9 @@ class loadingAlert: UIAlertController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "Loading chat..."
+        let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.boldSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .headline).pointSize)]
+        let attributedTitle = NSMutableAttributedString(string: "Loading chat...", attributes: attributes)
+        self.setValue(attributedTitle, forKey: "attributedTitle")
         
         //update height constraint
         let constraintHeight = NSLayoutConstraint(

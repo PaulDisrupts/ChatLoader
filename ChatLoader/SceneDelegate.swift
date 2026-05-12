@@ -16,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
        
         guard let url = URLContexts.first?.url else { return }
         
-        NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:["URLtoProcess":url])
+        NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
     }
     
 
