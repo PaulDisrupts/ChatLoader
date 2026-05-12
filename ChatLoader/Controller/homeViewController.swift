@@ -11,7 +11,7 @@ import CoreData
 class homeViewController: UIViewController, protocolFileProcessor, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     
     //MARK: Class variables
-    var openWithURL:URL?                    //set by NSNotification .userInfo?["URLtoProcess"]
+    var openWithURL:URL?                    //set by NSNotification .userInfo?[Helper.app.copytoAppURL]
     var isLoading:Bool = false              //used to stop two files being loaded at once
     var loadingProgress:loadingAlert?       //UIAlertController subclass to update loading progress
     
@@ -37,7 +37,9 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     
     @IBOutlet weak var buttonLoadChat: UIButton! {
         didSet {
-            #if !targetEnvironment(simulator)
+            buttonLoadChat.setTitleColor(Helper.app.colorPrimary, for: .normal)
+            
+#if !targetEnvironment(simulator)
             buttonLoadChat.setTitle("How to load a chat file", for: .normal)
             #endif
         }
@@ -67,17 +69,19 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         setupAutolayout()
     }
 
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         updateChatStats()
     }
     
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         if openWithURL != nil {
-            //ChatLoader launched via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
+            //ChatLoader launched via UIActivityViewController/'share'/"Copy to app" from an exported WhatsApp chat .zip file
             //openWithURL set in SceneDelegate func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
             
             loadFileFromURL(fileURL: openWithURL!)
@@ -89,12 +93,12 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     
     //MARK: Class functions
     func addNotifications() {
-        //ChatLoader opened from background via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
+        //ChatLoader opened from background via UIActivityViewController/'share'/"Copy to app" from an exported WhatsApp chat .zip file
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
 
             // get the URL from the NSNotification
-            if let url = notification.userInfo?["URLtoProcess"] as? URL {
+            if let url = notification.userInfo?[Helper.app.copytoAppURL] as? URL {
                 
                 if !self.isLoading {
                     //if a previous file is *not* currently being loaded
@@ -119,7 +123,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                         print("ERROR: homeViewController.addNotifications(): try fileManager.removeItem(at: url)\n\t\(error)")
                     }
                 } //} else
-            } //if let url = notification.userInfo?["URLtoProcess"] as? URL
+            } //if let url = notification.userInfo?[Helper.app.copytoAppURL] as? URL
         }
     }
     
@@ -219,7 +223,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                 loadFileFromURL(fileURL: openWithURL!)
                 
             } else {
-                print("Place the exported whatsapp chat .zip file in directory:")
+                print("Place the exported WhatsApp chat .zip file in directory:")
                 print(chatLoaderURL)
                 
                 let alertController = UIAlertController(title: ".zip file not found", message: "Place the .zip file in:\n\(chatLoaderURL.path)", preferredStyle: .alert)
@@ -228,6 +232,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                     UIPasteboard.general.string = chatLoaderURL.path
                 }
                 
+                actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
                 alertController.addAction(actionOK)
                 
                 self.present(alertController, animated: true) {}
@@ -272,6 +277,9 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
      
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+        let selectedView = UIView()
+        selectedView.backgroundColor = Helper.app.colorPrimaryCellSelected
+        cell.selectedBackgroundView = selectedView
         
         let chat = fetchedResultsController.object(at: indexPath)
         
@@ -295,6 +303,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             tableView.deselectRow(at: indexPath, animated: true)
         }
         
+        actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
         alertController.addAction(actionOK)
         
         self.present(alertController, animated: true)
@@ -304,6 +313,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
+    
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
@@ -441,6 +451,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         return ""
     }
     
+    
     func getNumberOfMessagesInChat(selectedChat: Chat) -> Int {
         
         do {
@@ -458,8 +469,6 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         }
     }
     
-    
-
     
     func printAttachmentTypes() {
         let fetchRequest:NSFetchRequest = Message.fetchRequest()
@@ -501,6 +510,8 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             let alertController = UIAlertController(title: "Apologies, I don't recognize the file", message: "Please make sure the region format of the chat history file matches the region settings of your phone (\(Helper.app.getLocale()));\nOr try another chat file", preferredStyle: .alert)
             
             let actionOk = UIAlertAction(title: "Ok", style: .cancel)
+            actionOk.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
+            
             alertController.addAction(actionOk)
             
             self.present(alertController, animated: true) {}
@@ -527,4 +538,3 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     }
  
 }
-

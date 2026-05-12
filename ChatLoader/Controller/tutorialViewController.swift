@@ -47,4 +47,5 @@ class tutorialViewController: UIViewController {
         
         player.play()
     }
+    
 }

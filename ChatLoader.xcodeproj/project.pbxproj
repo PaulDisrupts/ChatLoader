@@ -29,6 +29,7 @@
 		9CD1E58825D57F3C0012A02C /* ChatLoaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E58725D57F3C0012A02C /* ChatLoaderUITests.swift */; };
 		9CD1E59A25D581590012A02C /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E59925D581590012A02C /* Helper.swift */; };
 		AF1A888D2F82156F00B43B11 /* loadingAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF1A888C2F82156F00B43B11 /* loadingAlertController.swift */; };
+		AF4EF8D42FB2CB4F005EBE7A /* ChatLoader_logo_1024.png in Resources */ = {isa = PBXBuildFile; fileRef = AF4EF8D32FB2CB4F005EBE7A /* ChatLoader_logo_1024.png */; };
 		AFBF7DAF2FA1D4A200CD1F8C /* tutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBF7DAE2FA1D4A200CD1F8C /* tutorialViewController.swift */; };
 		AFBF7DB22FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AFBF7DB12FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 */; };
 /* End PBXBuildFile section */
@@ -87,6 +88,7 @@
 		9CD1E58925D57F3C0012A02C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9CD1E59925D581590012A02C /* Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
 		AF1A888C2F82156F00B43B11 /* loadingAlertController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = loadingAlertController.swift; sourceTree = "<group>"; };
+		AF4EF8D32FB2CB4F005EBE7A /* ChatLoader_logo_1024.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ChatLoader_logo_1024.png; sourceTree = "<group>"; };
 		AFBF7DAE2FA1D4A200CD1F8C /* tutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tutorialViewController.swift; sourceTree = "<group>"; };
 		AFBF7DB12FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ChatLoader_export tutorial.mp4"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -251,6 +253,7 @@
 		AFBF7DB02FA1D81000CD1F8C /* Files */ = {
 			isa = PBXGroup;
 			children = (
+				AF4EF8D32FB2CB4F005EBE7A /* ChatLoader_logo_1024.png */,
 				AFBF7DB12FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 */,
 			);
 			path = Files;
@@ -359,6 +362,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AF4EF8D42FB2CB4F005EBE7A /* ChatLoader_logo_1024.png in Resources */,
 				9CD1E57225D57F3C0012A02C /* LaunchScreen.storyboard in Resources */,
 				9CD1E56F25D57F3C0012A02C /* Assets.xcassets in Resources */,
 				9C29D3302691EC100058EF3B /* README.md in Resources */,

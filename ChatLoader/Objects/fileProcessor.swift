@@ -112,7 +112,7 @@ class fileProcessor:NSObject {
         if inputFileURL!.path.range(of: ".zip") != nil {
             
             if inputFileURL!.path.range(of: "Inbox/") != nil {
-                //file loaded via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
+                //file loaded via UIActivityViewController/'share'/"Copy to app" from an exported WhatsApp chat .zip file
                 chatName = String(inputFileURL!.path[inputFileURL!.path.range(of: "Inbox/")!.upperBound..<inputFileURL!.path.range(of: ".zip")!.lowerBound])
                 
             } else {
@@ -278,7 +278,7 @@ class fileProcessor:NSObject {
         selectedChat!.chatName = chatName!
         selectedChat!.dateLoad = NSDate()
         
-        selectedChat!.chatID = Int16(UserDefaults.standard.integer(forKey: "totalChatsLoaded") + 1) // chatID saved in saveContexts(); UserDefaults.standard.integer(forKey: "totalChatsLoaded") incremented in func saveContexts() --> renameDirectory()
+        selectedChat!.chatID = Int16(Helper.app.getNextChatID()) // chatID saved in saveContexts(); all-time chat count incremented via Helper.app.incrementChatID() in func saveContexts() --> renameDirectory()
         
         
         /*
@@ -320,7 +320,7 @@ class fileProcessor:NSObject {
                 
                 //process input line
                 //[DD/M/YY, HH:mm:ss] sender: message
-                if let indexDateTime = inputLine.range(of: dateTimeDelimiter){
+                if let indexDateTime = inputLine.range(of: dateTimeDelimiter) {
                     if let indexTimeSender = inputLine.range(of: "] ") {
                         if indexDateTime.upperBound<indexTimeSender.lowerBound {
                             
@@ -373,20 +373,20 @@ class fileProcessor:NSObject {
                                 
                                 message.senderColour = Int16(self.getGroupSenderIndex(message.sender!))
                                 
-                                i += 1 // only increment on messages and not on lines
+                                i += 1 //only increment on messages and not on lines
                             }
                             
-                        } else { //if indexDateTime.upperBound<indexTimeSender.lowerBound {
+                        } else { //if indexDateTime.upperBound<indexTimeSender.lowerBound
                             //inputLine is not in the expected timestamp format, append to previous message
                             self.appendMessage(inputLine)
                         }
                         
-                    } else { //if let indexTimeSender = inputLine.range(of: "] ") {
+                    } else { //if let indexTimeSender = inputLine.range(of: "] ")
                         //inputLine is not in the expected timestamp format, append to previous message
                         self.appendMessage(inputLine)
                     }
                     
-                } else { //if let indexDateTime = inputLine.range(of: dateTimeDelimiter){
+                } else { //if let indexDateTime = inputLine.range(of: dateTimeDelimiter)
                     
                     //append to previous message if it is *not* end of file
                     //ie last line ('end of file' char) is when: i = (lineCount-1)
@@ -424,7 +424,7 @@ class fileProcessor:NSObject {
                 self.saveContexts()
             })
             
-        })//DispatchQueue.global(qos: .background).async(execute: {
+        }) //DispatchQueue.global(qos: .background).async(execute:
     }
     
     
@@ -641,9 +641,7 @@ class fileProcessor:NSObject {
             try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(Helper.app.formatChatIDToDirectoryName(chatID: Int(self.selectedChat!.chatID))))
             
             //increment the all-time chat count
-            UserDefaults.standard.set(Int(self.selectedChat!.chatID), forKey: "totalChatsLoaded")
-            UserDefaults.standard.synchronize()
-            
+            Helper.app.incrementChatID()
 
         } catch let error as NSError {
             print("ERROR: fileProcessor.renameDirectory(): try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(Helper.app.formatChatIDToDirectoryName(chatID: Int(self.selectedChat!.chatID))))\n\t\(error)")
@@ -742,7 +740,7 @@ class fileProcessor:NSObject {
             } catch let error as NSError {
                 print("ERROR: fileProcessor.saveContexts(): try childContext.save()\n\t\(error)")
             }
-        }
+        } //if childContext.hasChanges
     }
     
 }
