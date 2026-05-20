@@ -391,7 +391,7 @@
 
      * 'Polls' are treated as a 'normal' message and generated as a text representation only (format only includes number of votes per option, not which sender voted for each option)
 
-     * 'Events' are treated as a "system" message (i.e. 'blue/off-white, centered' messages) **here**
+     * 'Events' are treated as a "system" message (i.e. 'blue/off-white, centered' messages) with text "sender_name: "
 
      * Link previews (ie URLs) are *NOT* generated to PDF
 
@@ -581,7 +581,7 @@
  attachmentType File type      Extension   ‘Filename code’  Preview image
  0              Text            n/a        n/a              n/a - message text
  1              Contact        .vcf        n/a              "iconContactCard 144.png"
- 2              Locations       n/a        n/a              n/a - message text of "Location" format
+ 2              Location       n/a         n/a              n/a - message text of "Location" format
  3              Image          .jpg        PHOTO            .jpg or "iconImage 144.png"
  4              GIF            .mp4        GIF              .jpg (generated thumbnail) or "iconGIF 144.png"
  5              Video          .mp4/.mov   VIDEO            .jpg (generated thumbnail) or "iconVideo 144.png"
@@ -592,7 +592,7 @@
  Exported with "Without media":
  attachmentType File type      Message text            Preview image
  101            Contact        Contact card omitted    "iconContactCard 144.png"
- 102            Locations      n/a                     n/a - message text of "Location" format
+ 102            Location       n/a                     n/a - message text of "Location" format
  103            Image          image omitted           "iconImage 144.png"
  104            GIF            GIF omitted             "iconGIF 144.png"
  105            Video          video omitted           "iconVideo 144.png"
@@ -613,7 +613,7 @@ class Helper {
     
     //MARK: variables
     let animationTime: Double = 0.25
-    var printToggle: Bool = true
+    var printToggle: Bool = false
     
     let colorPrimary = UIColor(red: 165.0/255, green: 42.0/255, blue: 213.0/255, alpha: 1) // hex: #a52ad5
     let colorPrimaryCellSelected = UIColor(red: 213.0/255, green: 42.0/255, blue: 176.0/255, alpha: 0.8) // hex: #d52ab0
@@ -635,6 +635,26 @@ class Helper {
     let keyHasBeenLaunched: String = "hasBeenLaunched"      //first time launch to set initial persistent variables, set in AppDelegate
     let keyVersionNumber: String = "versionNumber"          //incremented on version updates, set in AppDelegate
     let keyTotalChatsLoaded: String = "totalChatsLoaded"    //counter for all-time number of chats loaded; cannot use current number of chats in case of deleted chats, set in AppDelegate, incremented in fileProcessor
+    
+    //attachment types dictionary
+    var attachmentTypes: [Int16: String] = [0:"Text message",
+                                            1:"Contact",
+                                            2:"Location",   //note "Location" messages are not explicitly categorised in fileProcessor
+                                            3:"Image",
+                                            4:"GIF",
+                                            5:"Video",
+                                            6:"Voice message",
+                                            7:"Document",
+                                            8:"Sticker",
+                                            
+                                            101:"Contact card omitted",
+                                            102:"Location", //note "Location" message format the same whether attachmnents are included or not
+                                            103:"image omitted",
+                                            104:"GIF omitted",
+                                            105:"video omitted",
+                                            106:"audio omitted",
+                                            107:"document omitted",
+                                            108:"sticker omitted"]
     
     
     //MARK: date and formatting functions
@@ -839,6 +859,12 @@ class Helper {
         }
         
         return url
+    }
+    
+    
+    func getChatDirURL(chatID: Int16) -> URL {
+        
+        return importedChatsURL().appendingPathComponent(formatChatIDToDirectoryName(chatID: Int(chatID)))
     }
     
     

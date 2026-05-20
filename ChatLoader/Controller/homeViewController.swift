@@ -25,6 +25,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     var fetchedResultsController:NSFetchedResultsController<Chat> = NSFetchedResultsController()
+    var fetchedResultsControllerMessages:NSFetchedResultsController<Message> = NSFetchedResultsController()
     
     
     
@@ -67,16 +68,10 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         addNotifications()
         setFetchedResultsController()
         setupAutolayout()
-    }
-
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
         updateChatStats()
     }
-    
-    
+
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -231,8 +226,8 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
                 let actionOK = UIAlertAction(title: "Copy directory path", style: .default) { (action) in
                     UIPasteboard.general.string = chatLoaderURL.path
                 }
-                
                 actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
+                
                 alertController.addAction(actionOK)
                 
                 self.present(alertController, animated: true) {}
@@ -265,7 +260,7 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     
     //MARK: UITableview delegate
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return fetchedResultsController.sections!.count
     }
     
     
@@ -293,17 +288,16 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         let selectedChat = fetchedResultsController.object(at: indexPath)
-        let title = selectedChat.chatName!
-        let numberOfMessages = Helper.app.formatNumber(number: getNumberOfMessagesInChat(selectedChat: selectedChat))
-        
-        let message = "chatID: \(selectedChat.chatID)\ndateLoad: \(Helper.app.converNSDateToLocalDate(inputDate: selectedChat.dateLoad!))\n# of messages: \(numberOfMessages!)\nsenderList:\n\(selectedChat.senderList!)"
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+        let alertController = UIAlertController(title: selectedChat.chatName!,
+                                                message: "chatID: \(selectedChat.chatID)\ndateLoad: \(Helper.app.converNSDateToLocalDate(inputDate: selectedChat.dateLoad!))\nsenders: \(selectedChat.senderCount)\n# of messages: \(Helper.app.formatNumber(number: getNumberOfMessagesInChat(selectedChat: selectedChat))!)\n\(printAttachmentTypes(selectedChat: selectedChat)!)",
+                                                preferredStyle: .alert)
         
         let actionOK = UIAlertAction(title: "OK", style: .default) { (action) in
             tableView.deselectRow(at: indexPath, animated: true)
         }
-        
         actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
+        
         alertController.addAction(actionOK)
         
         self.present(alertController, animated: true)
@@ -318,6 +312,14 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
         self.context.delete(self.fetchedResultsController.object(at: indexPath))
+        
+        do {
+            //delete the chat's directory
+            try FileManager().removeItem(at: Helper.app.getChatDirURL(chatID: fetchedResultsController.object(at: indexPath).chatID))
+        } catch {
+            print("ERROR: homeViewController.tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath): try FileManager().removeItem(at: Helper.app.getChatDirURL(chatID: deletedChat.chatID))\n\t\(error)")
+            
+        }
     }
     
     
@@ -334,23 +336,20 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
             
         case .delete:
             
+            tableChats?.deleteRows(at: [indexPath!], with: UITableView.RowAnimation.left)
             
             do {
                 try context.save()
                 
-                tableChats?.deleteRows(at: [indexPath!], with: UITableView.RowAnimation.left)
-                //delete directory!
-                
+                updateChatStats()
             } catch {
-                    print("Error with save: \(error)")
+                print("ERROR: homeViewController.controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?): try context.save()\n\t\(error)")
                 }
             
             break
             
         default: break
         }
-        
-        self.updateChatStats()
     }
     
     
@@ -362,7 +361,10 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
         let fetchRequest:NSFetchRequest = Chat.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "chatID", ascending: false)]
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                              managedObjectContext: context,
+                                                              sectionNameKeyPath: nil,
+                                                              cacheName: nil)
         
         fetchedResultsController.delegate = self
         
@@ -470,10 +472,43 @@ class homeViewController: UIViewController, protocolFileProcessor, UITableViewDa
     }
     
     
-    func printAttachmentTypes() {
+    func printAttachmentTypes(selectedChat: Chat) -> String? {
+        
         let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
         
+        let sortDescriptor = NSSortDescriptor(key: "attachmentType", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
         
+        fetchedResultsControllerMessages = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                                      managedObjectContext: context,
+                                                                      sectionNameKeyPath: "attachmentType",
+                                                                      cacheName: nil)
+        
+        fetchedResultsControllerMessages.delegate = self
+        
+        var attachmentTypes:String?
+        
+        do {
+            try fetchedResultsControllerMessages.performFetch()
+            
+            if let sections = fetchedResultsControllerMessages.sections {
+                
+                attachmentTypes = ""
+                
+                for (_, sectionInfo) in sections.enumerated() {
+                    let sectionName = Helper.app.attachmentTypes[Int16(sectionInfo.name)!]!
+                    print("Attachment type: \(sectionName): \(sectionInfo.numberOfObjects)")
+                    
+                    attachmentTypes = attachmentTypes! + "\(sectionName): \(sectionInfo.numberOfObjects)\n"
+                }
+            }
+        } catch let error as NSError {
+            print("ERROR: homeViewController.printAttachmentTypes(selectedChat: Chat): try fetchedResultsControllerMessages.performFetch()\n\t\(error)")
+            
+        }
+        
+        return attachmentTypes
     }
     
     
