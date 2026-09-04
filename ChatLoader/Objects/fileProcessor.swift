@@ -11,24 +11,18 @@ import Foundation
 import UIKit
 import CoreData
 
-protocol protocolFileProcessor {
-    func processingStarted()
-    func updateProgress(percentComplete:Int)
-    func processingError()
-    func processingSaving()
-    func processingComplete()
-}
 
 /*
     ***Happy Path***
-    processExportedFile(initInputFileURL:URL)
+    processExportedFile()
         getChatName()
         unzipExportedFile()
         validateTextFileFormat()
             processTextFile(inputFile:[String], dateTimeDelimiter:String)
                 saveContexts()
                     self.renameDirectory()
-                    self.delegate?.processingComplete(message: "saved")
+                        deleteFiles(tempDirectory: false)
+                    self.delegate?.processingComplete()
  */
 
 class fileProcessor:NSObject {
@@ -63,22 +57,25 @@ class fileProcessor:NSObject {
     
         /*
          1. setup URLs, delegate
-         //call processExportedFile() from delegate object
          2. get file name
          3. unzip files, find _chat.txt, remove unwanted files
-         4. process _chat.txt file
-         5. rename directory --> called in func saveContexts() {
+         4. validate _chat.txt file format
+         5. process _chat.txt file
+         6. rename directory/remove _chat.txt --> called in func saveContexts()
          */
+        
         
         //1. setup URLs, delegate
         self.delegate = delegate
         self.inputFileURL = inputFile   //always of filetype .zip
         self.tempDirURL = Helper.app.tempDirURL()
+        
+        processExportedFile()
     }
     
     
     func processExportedFile() {
-        //errorLoadingFile() called when:
+        //errorLoadingFile(message: String) called when:
         //a) No .txt file found in the .zip (ie. inputFileURL, which has to be of type .zip); note that the text filename does not have to be "_chat.txt"
         //b) .txt file is of the wrong format
         
@@ -93,16 +90,16 @@ class fileProcessor:NSObject {
         //3. unzip files, find _chat.txt, remove unwanted files
         unzipExportedFile()
         
-        //4. process _chat.txt
+        //4. validate _chat.txt file format
         if fileToProcessURL != nil {
             validateTextFileFormat()
         } else {
             //a) No .txt file found in the .zip (ie. inputFileURL, which has to be of type .zip); note that the text filename does not have to be "_chat.txt"
             print("fileProcessor.swift\n\tfunc processExportedFile() {\n\t\tif fileToProcessURL != nil {\n\t\t\tERROR:.txt not found!!")
-            errorLoadingFile()
+            self.errorLoadingFile(message: "Error: .txt file not found")
         }
         
-        //5. rename directory --> called in func saveContexts() {
+        //6. rename directory/remove _chat.txt --> called in func saveContexts()
     }
 
     
@@ -167,7 +164,13 @@ class fileProcessor:NSObject {
                     if printToggle {
                      print("\nupdated fileToProcessURL: \(fileToProcessURL!.path)")
                     }
-                } else {//add else if statement to keep filetypes, eg. else if f.hasSuffix(".jpg")
+                    
+                }
+                else if f.hasSuffix(".jpg") {
+                    //add else if statement to keep filetypes, eg. else if f.hasSuffix(".jpg")
+                    //keep this file type
+                }
+                else {
                     
                     //remove unwanted file(s)
                     do {
@@ -215,7 +218,7 @@ class fileProcessor:NSObject {
                      
                      Edge case: First line/message in format:
                         [DD/M/YY HH:mm:ss] sender: "message_content_contains_', '_delimiter"\r\n
-                            --> will trigger errorLoadingFile() because: (validFileFormat = false) && (indexDateTime > indexTimeSender)
+                            --> will trigger errorLoadingFile(message: String) because: (validFileFormat = false) && (indexDateTime > indexTimeSender)
                     */
                     
                     var indexDateTime:Range<String.Index>?
@@ -243,6 +246,7 @@ class fileProcessor:NSObject {
                                                 print("func validateTextFileFormat() {\n\tprocessTextFile(inputFile: textFileContents, dateTimeDelimiter: \(dateTimeDelimiter)")
                                             }
                                             
+                                            //5. process _chat.txt file
                                             validFileFormat = true
                                             processTextFile(inputFile: textFileContents, dateTimeDelimiter: dateTimeDelimiter)
                                         }
@@ -259,7 +263,7 @@ class fileProcessor:NSObject {
         if !validFileFormat {
             //b) .txt file is of the wrong format
             print("fileProcessor.swift/n/tfunc validateTextFileFormat() {/n/tif !validFileFormat {/n/tERROR: .txt invalid format!!")
-            errorLoadingFile()
+            self.errorLoadingFile(message: "Error: .txt file format not recognised")
         }
     }
 
@@ -299,7 +303,8 @@ class fileProcessor:NSObject {
         }
         
         //process file in background
-        self.delegate?.processingStarted()
+        self.delegate?.processingStarted()  //delegate (typically chatsViewController) will trigger loadingAlertController
+        
         DispatchQueue.global(qos: .background).async(execute: {
             
             //process the file line by line
@@ -365,9 +370,9 @@ class fileProcessor:NSObject {
                                     message.attachmentType = self.getMessageAttachmentType(messageText: message.messageContent!)
                                     
                                 } else {
-                                    //cannot distinguish between sender and message; assume that it is a group status update; note: this will be set as outgoing = false
+                                    //cannot distinguish between sender and message; assume that it is a 'WhatsApp system' message; note: this will be set as outgoing = false
                                     
-                                    message.sender = Helper.app.groupMessageSender
+                                    message.sender = Helper.app.chatStatusUpdate
                                     message.messageContent = inputLine[indexTimeSender.upperBound..<inputLine.endIndex].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
                                 }
                                 
@@ -516,7 +521,7 @@ class fileProcessor:NSObject {
             
         } else {
             //valid message not yet found (first line of the file); 'break' is no longer called and the rest of file still will be processed (eg. prefixed lines/incorrectly formatted text)
-            //errorLoadingFile() is called *after* the entire file is processed
+            //errorLoadingFile(message: String) is called *after* the entire file is processed
         }
     }
     
@@ -649,13 +654,13 @@ class fileProcessor:NSObject {
     }
 
     
-    func errorLoadingFile() {
-        print("func errorLoadingFile()")
+    func errorLoadingFile(message: String) {
+        print("fileProcessor.errorLoadingFile(message: String): message = \(message)")
         
         deleteFiles(tempDirectory: true)
         
         DispatchQueue.main.async(execute: {
-            self.delegate?.processingError()
+            self.delegate?.processingError(errorMessage: message)
         })
     }
     
@@ -725,7 +730,7 @@ class fileProcessor:NSObject {
                         try self.childContext.parent?.save()
                         self.isSavingCoreData = false
                         
-                        //5. rename directory --> called in func saveContexts() {
+                        //6. rename directory/remove _chat.txt --> called in func saveContexts()
                         self.renameDirectory()
                         
                         DispatchQueue.main.async(execute: {

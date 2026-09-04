@@ -10,7 +10,7 @@
 import UIKit
 
 
-class loadingAlert: UIAlertController {
+class loadingAlertController: UIAlertController {
     
     let alertHeight:CGFloat = 108   //default width of UIAlertController (style .alert) in iOS18 is 270 points (iOS26 is 320?); default height (with no buttons) is 64 points; default height with one button is 108.33 points (64 + 44)
     let spacer:CGFloat = 8          //spacer for progressViewLoading:UIProgressView
