@@ -13,7 +13,10 @@ import MessageUI
 class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate, UITableViewDataSource, UITableViewDelegate {
     
     var tableAbout = UITableView(frame: .zero, style: .insetGrouped)
-    let cellReuseIdentifier = "reuseIdentifier"
+    let cellReuseIdentifierAbout = "reuseIdentifier"                //aboutTableViewCell
+    let cellReuseIdentifierPrivacy = "privacyCellReuseIdnetifier"   //privacyStatementCell
+    
+    let spacer: CGFloat = 4
     let privacyRowHeight: CGFloat = 70  //default UILabel height = 21, so 3 and 1/3 times
     
     let sectionHeaders: [String] = ["Get in touch", "App info", "Privacy", "Acknowledgements"]
@@ -21,15 +24,14 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
     let tableContent: [[String]] = [
         ["Feedback", "Report a bug", "Tell a friend about ChatLoader"],
         ["ChatLoader version:", "Chats loaded:", "Total messages loaded:"],
-        ["All data is stored on your device only;\nNo data is collected from this app."],
+        ["Privacy statement --> use textFieldTableViewCell"],
         ["WPZipArchive"]
-        //        ["I created this app so you can capture and combine your favourite voice messages from WhatsApp"],
         ]
     
     let tableEnabledRows: [[Bool]] = [
         [true, true, true],
         [false, false, false, false],
-        [false],
+        [true],
         [true],
         ]
     
@@ -46,36 +48,43 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         
         setContext()
         setTableView()
-        setnavigationBar()
     }
     
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         tableAbout.reloadData()
+        setnavigationBar()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        tableAbout.flashScrollIndicators()
     }
     
     
     func setTableView() {
         
-        self.view.backgroundColor = .white
-        
         tableAbout.dataSource = self
         tableAbout.delegate = self
-        tableAbout.register(aboutTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifier)
+        tableAbout.register(aboutTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifierAbout)
+        tableAbout.register(textFieldTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifierPrivacy)
         
-        tableAbout.backgroundColor = .systemGray6
-        tableAbout.translatesAutoresizingMaskIntoConstraints = false
         tableAbout.isScrollEnabled = true
+        
+        tableAbout.translatesAutoresizingMaskIntoConstraints = false
+        
         self.view.addSubview(tableAbout)
         
         
         NSLayoutConstraint.activate([
-            tableAbout.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            tableAbout.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+            tableAbout.topAnchor.constraint(equalTo: self.view.topAnchor),
+            tableAbout.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
             
-            tableAbout.leadingAnchor.constraint(equalTo: self.view.readableContentGuide.leadingAnchor),
-            tableAbout.trailingAnchor.constraint(equalTo: self.view.readableContentGuide.trailingAnchor),
+            tableAbout.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            tableAbout.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
         ])
     }
     
@@ -84,11 +93,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.title = "About ChatLoader"
-        
-        if var textAttributes = self.navigationController?.navigationBar.titleTextAttributes {
-            textAttributes[NSAttributedString.Key.foregroundColor] = Helper.app.colorPrimary
-            navigationController?.navigationBar.titleTextAttributes = textAttributes
-        }
+//        self.navigationItem.largeTitleDisplayMode = .always
     }
     
     
@@ -148,22 +153,17 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
 
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-             return UITableView.automaticDimension
+        return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        
-        if indexPath.section == 2 {
-            return privacyRowHeight
-        } else {
-            return UITableView.automaticDimension
-        }
+        return UITableView.automaticDimension
     }
 
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier, for: indexPath) as? aboutTableViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifierAbout, for: indexPath) as? aboutTableViewCell
         else { return UITableViewCell() }
         
         cell.isUserInteractionEnabled = tableEnabledRows[indexPath.section][indexPath.row]
@@ -171,10 +171,12 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         
         if indexPath.section == 0 {
             //Get in touch
+            
             cell.setupCellViews(title: nil, value: nil, action: tableContent[indexPath.section][indexPath.row])
         }
         else if indexPath.section == 1 {
             //App info
+            
             if indexPath.row == 0 {
                 cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: Helper.app.getAppVersion(), action: nil)
             } else if indexPath.row == 1 {
@@ -183,14 +185,24 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
                 cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: Helper.app.formatNumber(number: getTotalMessages())!, action: nil)
             }
         }
+        else if indexPath.section == 2 {
+            //Privacy
+            
+            guard let privacyStatementCell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifierPrivacy, for: indexPath) as? textFieldTableViewCell
+            else { return UITableViewCell() }
+            
+            privacyStatementCell.setupCellViews(title: "ChatLoader's privacy statement",
+                                                value: "All chat data used by ChatLoader is stored locally on your device. You can confirm this by using the app offline.\n\nThe app *collects NO data* from your chats – no message content and no personally identifiable information either.\n\nThe exported WhatsApp chat is deleted after it is processed; and only the message content and relevant attachments are saved to the app. This data is stored within the app's private directories as dictated by Apple's app design guidelines.\n\nWhen you delete an imported chat or any other artefact from within the app, it is completely removed from your iPhone.\n\nYou can find out more in ChatLoader's privacy statement.",
+                                                action: "https//www.apple.com")
+            
+            privacyStatementCell.isUserInteractionEnabled = true
+            
+            return privacyStatementCell
+        }
         else {
-            //Privacy, Acknowledgements
+            //Acknowledgements
             cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: nil, action: tableContent[indexPath.section][indexPath.row])
         }
-//        else if indexPath.section == 3 {
-//            //Acknowledgements
-//            cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: nil, action: tableContent[indexPath.section][indexPath.row])
-//        }
             
         return cell
     }
@@ -269,7 +281,8 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
             
             return results.count
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: aboutViewController.getTotalChats(): let results = try childContext.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]\n\t\(error)")
         }
         
@@ -286,7 +299,8 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
             
             return results.count
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: aboutViewController.getTotalMessages(): let results = try childContext.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
         }
         

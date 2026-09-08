@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             UserDefaults.standard.set(true, forKey: Helper.app.keyHasBeenLaunched)
             UserDefaults.standard.set(false, forKey: Helper.app.keyHasRated)
             UserDefaults.standard.set(0, forKey: Helper.app.keyTotalChatsLoaded)           //Helper.app.getNextChatID() will increment, ie first chat loaded will start at 1
-            UserDefaults.standard.set("0.3", forKey: Helper.app.keyVersionNumber)
+            UserDefaults.standard.set("0.4", forKey: Helper.app.keyVersionNumber)
             UserDefaults.standard.set("Free", forKey: Helper.app.keyInAppPurchase)          //Free; Paid
             
             UserDefaults.standard.synchronize()
@@ -39,7 +39,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 
                 do {
                     try fileManager.createDirectory(atPath: (Helper.app.importedChatsURL().path), withIntermediateDirectories: true, attributes: nil)
-                } catch let error as NSError {
+                }
+                catch let error as NSError {
                     print("ERROR: AppDelegate.application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?): try fileManager.createDirectory(atPath: (Helper.app.importedChatsURL().path), withIntermediateDirectories: true, attributes: nil)\n\t\(error)")
                 }
             }
@@ -86,7 +87,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                fatalError("ERROR: AppDelegate.application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>):  container.loadPersistentStores(completionHandler: { (storeDescription, error) in\n\t\(error), \(error.userInfo)")
+                fatalError("FATAL ERROR: AppDelegate.application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>):  container.loadPersistentStores(completionHandler: { (storeDescription, error) in\n\t\(error)")
             }
         })
         return container
@@ -99,11 +100,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if context.hasChanges {
             do {
                 try context.save()
-            } catch {
+            }
+            catch let error as NSError {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nserror = error as NSError
-                fatalError("ERROR: AppDelegate.saveContext(): try context.save()\(nserror), \(nserror.userInfo)")
+                fatalError("FATAL ERROR: AppDelegate.saveContext(): try context.save()\(error)")
             }
         }
     }

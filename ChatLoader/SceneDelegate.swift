@@ -14,7 +14,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         
-        //ChatLoader opened from background via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file
+        //ChatLoader **opened from background** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file
         guard let url = URLContexts.first?.url else { return }
         
         NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
@@ -31,7 +31,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         //setup root tab view controller
         self.window?.rootViewController = mainTabBarViewController()
         
-        //ChatLoader launched via UIActivityViewController/'Share'/"Copy to app" from an exported Whatsapp chat .zip file
+        //ChatLoader **launched** via UIActivityViewController/'Share'/"Copy to app" from an exported Whatsapp chat .zip file
         if let url = connectionOptions.urlContexts.first?.url {
             NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
         }

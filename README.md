@@ -14,10 +14,11 @@ Tested on:
 ## Usage
 ### iOS Device
 1. Open WhatsApp
-2. Swipe left on the WhatsApp chat to export
-3. Tap "More"
+2. Select a WhatsApp chat
+3. Tap on the chat's name in the title bar
+3. Tap the "More" icon in the top-right corner
 4. Tap "Export Chat"
-5. Tap "Without Media"
+5. Tap "With Media"
 6. Tap ChatLoader from the 'Share menu' (note you may have to swipe to the right and select "More" then add ChatLoader to the list of apps that appear on the 'Share menu')
 7. ...
 8. Profit $$!

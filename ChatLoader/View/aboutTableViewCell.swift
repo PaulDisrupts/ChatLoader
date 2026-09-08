@@ -33,7 +33,7 @@ class aboutTableViewCell: UITableViewCell {
     
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("FATAL ERROR: init(coder:) has not been implemented")
     }
     
     
@@ -125,6 +125,7 @@ class aboutTableViewCell: UITableViewCell {
             
             NSLayoutConstraint.activate([
                 labelAction!.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+                //**Here**
                 labelAction!.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 3*spacer),
                 labelAction!.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -3*spacer),
                 labelAction!.heightAnchor.constraint(equalToConstant: labelHeight),

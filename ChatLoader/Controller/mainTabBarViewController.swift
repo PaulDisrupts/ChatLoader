@@ -90,8 +90,9 @@ class mainTabBarViewController: UITabBarController {
                         try fileManager.removeItem(at: url)
                         print("mainTabBarViewController.setNotifications()_NotificationCenter.default.addObserver: Helper.app.isLoading() == true: file deleted")
                         
-                    } catch let error as NSError {
-                        print("ERROR: mainTabBarViewController.setNotifications()_NotificationCenter.default.addObserver: try fileManager.removeItem(at: url)\n\t\(error)")
+                    }
+                    catch let error as NSError {
+                        print("ERROR: mainTabBarViewController.setNotifications(): NotificationCenter.default.addObserver: try fileManager.removeItem(at: url)\n\t\(error)")
                     }
                 }
                 

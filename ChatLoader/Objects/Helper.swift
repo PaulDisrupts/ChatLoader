@@ -319,7 +319,8 @@ class Helper {
                 }
             }
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: Helper.getImportedFileURLFromInbox(): let fileNames = try fileManager.contentsOfDirectory(atPath: inboxDirectoryURL().path) as [String]?\n\t\(error)")
         }
         
@@ -343,7 +344,8 @@ class Helper {
                 }
             }
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: Helper.printFilesInbox(): let fileNames = try fileManager.contentsOfDirectory(atPath: inboxDirectoryURL().path) as [String]?\n\t\(error)")
         }
     }
@@ -389,7 +391,10 @@ class Helper {
                 } else if let fileSize = resourceValues.fileSize {
                     totalSize += Int64(fileSize)
                 }
-            } catch {
+            }
+            catch let error as NSError {
+                print("ERROR: Helper.sizeOfDirectory(at url: URL): let resourceValues = try fileURL.resourceValues(forKeys: Set(keys))\n\t\(error)")
+                
                 // Continue calculating size even if one file fails to read
                 continue
             }
@@ -465,19 +470,23 @@ extension URL {
     var attributes: [FileAttributeKey : Any]? {
         do {
             return try FileManager.default.attributesOfItem(atPath: path)
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: Helper.swift: extension URL: var attributes: [FileAttributeKey : Any]?: return try FileManager.default.attributesOfItem(atPath: path)\n\t\(error)")
         }
         return nil
     }
     
+    
     var fileSize: UInt64 {
         return attributes?[.size] as? UInt64 ?? UInt64(0)
     }
     
+    
     var fileSizeString: String {
         return ByteCountFormatter.string(fromByteCount: Int64(fileSize), countStyle: .file)
     }
+    
     
     var creationDate: Date? {
         return attributes?[.creationDate] as? Date
@@ -570,7 +579,7 @@ extension UIViewController {
     }
 
 
-    protocol protocolselectSender {
-        func selectedSender(senderName: String)
-        func noSelectedSender()
+    protocol protocolDataSelected {
+        func dismissWithChanges()
+        func dismissNoChanges()
     }

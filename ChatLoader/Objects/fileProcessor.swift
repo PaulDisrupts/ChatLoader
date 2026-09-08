@@ -95,7 +95,7 @@ class fileProcessor:NSObject {
             validateTextFileFormat()
         } else {
             //a) No .txt file found in the .zip (ie. inputFileURL, which has to be of type .zip); note that the text filename does not have to be "_chat.txt"
-            print("fileProcessor.swift\n\tfunc processExportedFile() {\n\t\tif fileToProcessURL != nil {\n\t\t\tERROR:.txt not found!!")
+            print("fileProcessor.processExportedFile():\n\t\tif fileToProcessURL != nil:\n\t\t\tERROR:.txt not found!!")
             self.errorLoadingFile(message: "Error: .txt file not found")
         }
         
@@ -136,7 +136,8 @@ class fileProcessor:NSObject {
             do {
                 try fileManager.createDirectory(atPath: (tempDirURL!.path), withIntermediateDirectories: true, attributes: nil)
                 
-            } catch let error as NSError {
+            }
+            catch let error as NSError {
                 print("ERROR: fileProcessor.unzipExportedFile(): try fileManager.createDirectory(atPath: (tempDirURL!.path), withIntermediateDirectories: true, attributes: nil)\n\t\(error)")
             }
         }
@@ -177,13 +178,15 @@ class fileProcessor:NSObject {
                         try fileManager.removeItem(atPath: tempURL.path)
                         print("\nfunc unzipExportedFile(): removed file: \(tempURL.lastPathComponent)")
                         
-                    } catch let error as NSError {
+                    }
+                    catch let error as NSError {
                         print("ERROR: fileProcessor.unzipExportedFile(): try fileManager.removeItem(atPath: tempURL.path)\n\t\(error)")
                     }
                 }
             } //for f in unzippedFiles!
             
-        } catch let error as NSError {
+        } //try fileManager.contentsOfDirectory(atPath: tempDirURL!.path) as [String]?
+        catch let error as NSError {
             print("ERROR: fileProcessor.unzipExportedFile(): let unzippedFiles = try fileManager.contentsOfDirectory(atPath: tempDirURL!.path) as [String]?\n\t\(error)")
         }
     }
@@ -262,7 +265,7 @@ class fileProcessor:NSObject {
         //.txt file format of fileToProcessURL! not valid format
         if !validFileFormat {
             //b) .txt file is of the wrong format
-            print("fileProcessor.swift/n/tfunc validateTextFileFormat() {/n/tif !validFileFormat {/n/tERROR: .txt invalid format!!")
+            print("fileProcessor.validateTextFileFormat():\n\tif !validFileFormat:\n\tERROR: .txt invalid format")
             self.errorLoadingFile(message: "Error: .txt file format not recognised")
         }
     }
@@ -418,7 +421,7 @@ class fileProcessor:NSObject {
             self.selectedChat!.senderList = distinctSendersList
             
             if self.printToggle {
-                print("fileProcessor_distinctSendersList:\n\(distinctSendersList)")
+                print("fileProcessor.processTextFile(inputFile:[String], dateTimeDelimiter:String): distinctSendersList:\n\(distinctSendersList)")
             }
             
             //update the UI on main queue
@@ -648,7 +651,8 @@ class fileProcessor:NSObject {
             //increment the all-time chat count
             Helper.app.incrementChatID()
 
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: fileProcessor.renameDirectory(): try fileManager.moveItem(at: tempDirURL!, to: Helper.app.importedChatsURL().appendingPathComponent(Helper.app.formatChatIDToDirectoryName(chatID: Int(self.selectedChat!.chatID))))\n\t\(error)")
         }
     }
@@ -675,7 +679,8 @@ class fileProcessor:NSObject {
             do {
                 try fileManager.removeItem(at: tempDirURL!)
                 
-            } catch let error as NSError {
+            }
+            catch let error as NSError {
                 print("ERROR: fileProcessor.deleteFiles(tempDirectory:Bool): try fileManager.removeItem(at: tempDirURL!)\n\t\(error)")
             }
         
@@ -689,7 +694,8 @@ class fileProcessor:NSObject {
                     print("func deleteFiles(tempDirectory:Bool): removed file at: \(fileToProcessURL!.path)")
                 }
                 
-            } catch let error as NSError {
+            }
+            catch let error as NSError {
                 print("ERROR: fileProcessor.deleteFiles(tempDirectory:Bool): try fileManager.removeItem(atPath: fileToProcessURL!.path)\n\t\(error)")
             }
         }
@@ -701,7 +707,8 @@ class fileProcessor:NSObject {
             do {
                 try fileManager.removeItem(at: inputFileURL!)
                 
-            } catch let error as NSError {
+            }
+            catch let error as NSError {
                 print("ERROR: fileProcessor.deleteFiles(tempDirectory:Bool): try fileManager.removeItem(at: inputFileURL!)\n\t\(error)")
             }
         
@@ -737,12 +744,14 @@ class fileProcessor:NSObject {
                             self.delegate?.processingComplete()
                         })
                         
-                    } catch let error as NSError {
+                    }
+                    catch let error as NSError {
                         print("ERROR: fileProcessor.saveContexts(): try self.childContext.parent?.save()\n\t\(error)")
                     }
                 })
                 
-            } catch let error as NSError {
+            }
+            catch let error as NSError {
                 print("ERROR: fileProcessor.saveContexts(): try childContext.save()\n\t\(error)")
             }
         } //if childContext.hasChanges

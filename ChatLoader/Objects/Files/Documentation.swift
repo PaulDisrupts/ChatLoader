@@ -490,7 +490,7 @@
               <attached: messageID-STICKER-timestamp.webp>
           - a resized copy of the source sticker (when "4. Include images" = true AND exported chat file "Attach Media")
 
-     * Live photos are treated as two separate messages, one for the photo and one for the video
+     * Live photos are treated as two separate messages that use the standard format: one message as an image attachment (which may have a caption); and one message as a video attachment
  
      * Messages in the generated PDF with an image/placeholder icon contain the underlying 'normal' message (i.e "X omitted" or the exported attachment syntax) in a transparent text colour, i.e it can still be searched/selected in a PDF viewer app
 */
@@ -566,26 +566,28 @@
      </array>
  
  
- 1) ChatLoader **launched** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file
+ Loading exported WhatsApp chat process
+ **************************************
+ 
+ 1) Notification listener is set in:
+        mainTabBarViewController.setNotifications()
+            NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
+ 
+ 2) ChatLoader opening file:
+ 
+ a) **launched** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file:
+        Notification is posted in: ScenDelegate.scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions)
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
 
- a) homeViewController.openWithURL is set in SceneDelegate.swift
-    --> func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {}
+ b) **opened from background** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file:
+        Notification is posted in: ScenDelegate.scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
  
- 
- 2) ChatLoader **opened from background** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file
-    
- a)  Notification listener is set in SceneDelegate:
-        func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {}
- 
- b) homeViewController.openWithURL is set in homeViewController.swift via Notification handler
-    --> NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in }
- 
- 
- 3) ChatLoader **launched or opened from background** via Core Spotlight (not implemented)
- 
- a) Notification listener is set in SceneDelegate.swift:
-    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {}
- 
+ 3) ChatLoader processing file:
+    mainTabBarViewController.setNotifications()
+        NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
+                if let url = notification.userInfo?[Helper.app.copytoAppURL] as? URL {
+                    chatsVC.loadFileFromURL(fileURL: url)
  */
 
 /*

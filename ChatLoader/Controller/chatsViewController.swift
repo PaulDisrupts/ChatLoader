@@ -8,7 +8,7 @@
 import UIKit
 import CoreData
 
-class chatsViewController: UIViewController, protocolFileProcessor, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate, protocolselectSender {
+class chatsViewController: UIViewController, protocolFileProcessor, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate, protocolDataSelected {
     
     //MARK: Class variables
     var loadingProgress:loadingAlertController?       //UIAlertController subclass to update loading progress
@@ -21,13 +21,9 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     let cellReuseIdentifier = "reuseIdentifier"
     let estimatedRowHeight:CGFloat = 58         //spacer + labelHeight + spacer + labelHeight + 2*spacer = 4 + 21 + 4 + 21 + 2*4 = 58
     
-    let buttonLoadChatHeight: CGFloat = 44      //default iOS button height
-    let labelTotalChats_MessagesHeight: CGFloat = 30
-    
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     var fetchedResultsController:NSFetchedResultsController<Chat> = NSFetchedResultsController()
-    var fetchedResultsControllerMessages:NSFetchedResultsController<Message>?   //used for func printAttachmentTypes(selectedChat: Chat) -> String?
     
     
     //MARK: VC Lifecycle
@@ -43,11 +39,10 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         super.viewWillAppear(animated)
         
         if let selectedCell = tableChats.indexPathForSelectedRow {
-            tableChats.reloadRows(at: [tableChats.indexPathForSelectedRow!], with: .automatic)
+            tableChats.reloadRows(at: [tableChats.indexPathForSelectedRow!], with: .automatic) //if coming from a scene where Chat/Message has been updated
             tableChats.deselectRow(at: selectedCell, animated: true)
         }
         
-        updateChatStats(fromDelete: false)
         setNavigationBar()
     }
     
@@ -68,8 +63,8 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         self.view.addSubview(tableChats)
         
         NSLayoutConstraint.activate([
-            tableChats.topAnchor.constraint(equalTo: self.view.topAnchor), //self.view.safeAreaLayoutGuide.topAnchor causes issues with self.navigationController?.navigationBar.prefersLargeTitles animations
-            tableChats.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+            tableChats.topAnchor.constraint(equalTo: self.view.topAnchor), //self.view.safeAreaLayoutGuide and self.view.readableContentGuide causes issues with self.navigationController?.navigationBar.prefersLargeTitles animations
+            tableChats.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
             
             tableChats.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             tableChats.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
@@ -77,41 +72,10 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     }
     
     
-    func loadFileFromURL(fileURL:URL) {
+    func showTutorialAfterChatDeleted() {
         
-        if !Helper.app.isLoading() {
-            Helper.app.setIsLoading(isLoading: true)    //this is the *only* place isLoading can be set to true
-            
-            //reset tableChats
-            if self.tableChats.indexPathForSelectedRow != nil {
-                self.tableChats.deselectRow(at: self.tableChats.indexPathForSelectedRow!, animated: true)
-            }
-            
-            if getTotalChats() > 0 {
-                self.tableChats.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
-            }
-            
-            //process the .zip file
-            fp = fileProcessor(delegate: self, inputFile: fileURL)
-        }
-        else {
-            //a file is currently being loaded, delete the new file
-            
-            let fileManager = FileManager()
-            
-            do {
-                try fileManager.removeItem(at: fileURL)
-            } catch let error as NSError {
-                print("ERROR: chatsViewController.loadFileFromURL(fileURL:URL): try fileManager.removeItem(at: url)\n\t\(error)")
-            }
-        }
-    }
-    
-    
-    func updateChatStats(fromDelete: Bool) {
-
         //if no chats loaded, default to tutorialViewController()
-        if fromDelete && Helper.app.showTutorial(numberOfChats: getTotalChats()) {
+        if Helper.app.showTutorial(numberOfChats: getTotalChats()) {
             //only show tutorial on deleting Chat (tutorial will trigger on launch if no Chats loaded)
             if let tabVC = self.getTabBarController() {
                 tabVC.selectedIndex = 1
@@ -150,9 +114,98 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     }
     
     
+    func loadFileFromURL(fileURL:URL) {
+        
+        if !Helper.app.isLoading() {
+            Helper.app.setIsLoading(isLoading: true)    //this is the *only* place isLoading can be set to true
+            
+            //reset tableChats
+            if self.tableChats.indexPathForSelectedRow != nil {
+                self.tableChats.deselectRow(at: self.tableChats.indexPathForSelectedRow!, animated: true)
+            }
+            
+            if getTotalChats() > 0 {
+                self.tableChats.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+            }
+            
+            //process the .zip file
+            fp = fileProcessor(delegate: self, inputFile: fileURL)
+        }
+        else {
+            //a file is currently being loaded, delete the new file
+            
+            let fileManager = FileManager()
+            
+            do {
+                try fileManager.removeItem(at: fileURL)
+            }
+            catch let error as NSError {
+                print("ERROR: chatsViewController.loadFileFromURL(fileURL:URL): try fileManager.removeItem(at: url)\n\t\(error)")
+            }
+        }
+    }
+    
+
+    func startingVC() -> Int {
+        
+        if getTotalChats() > 0 {
+            return 0    //chatsViewController
+        } else {
+            return 1    //tutorialViewController
+        }
+    }
+    
+
+    func showContextMenu(indexPath: IndexPath) {
+        
+        //documentation - cannot programatically trigger contextMenuConfigurationForRowAt?
+        /*
+        // 1. Get the cell for the specified row
+        guard let cell = self.tableChats.cellForRow(at: indexPath) else { return }
+            
+            // 2. Find the context menu interaction attached to the cell
+            let contextMenuInteraction = cell.interactions.compactMap { $0 as? UIContextMenuInteraction }.first
+            
+            // 3. Manually present the menu
+            contextMenuInteraction?.
+         */
+    }
+    
+    
+    //MARK: segues
+    func segueToSelectedChat(selectedChatIndex: IndexPath) {
+        
+        let selectedChat = fetchedResultsController.object(at: selectedChatIndex)
+        
+        let vc = modalTableViewViewController()
+        vc.selectedChat = selectedChat
+        vc.delegate = self
+        let navVC = UINavigationController(rootViewController: vc)
+        
+        navVC.modalPresentationStyle = .pageSheet
+        
+        if #available(iOS 15.0, *) {
+            if let sheet = navVC.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.selectedDetentIdentifier = .large
+                sheet.presentingViewController.isModalInPresentation = true
+                sheet.prefersGrabberVisible = false
+            }
+        }
+        
+        self.present(navVC, animated: true){
+            
+            if let cell = self.tableChats.cellForRow(at: selectedChatIndex) as? chatTableViewCell {
+                cell.updateDirSize(chat: selectedChat)
+            }
+        }
+    }
+    
+    
     func setSender(selectedChatIndex: IndexPath) {
         
         let vc = selectSenderViewController()
+        vc.selectedChat = fetchedResultsController.object(at: selectedChatIndex)
         vc.delegate = self
         
         let navVC = UINavigationController(rootViewController: vc)
@@ -167,79 +220,11 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
             }
         }
         
-        if let senderList = fetchedResultsController.object(at: selectedChatIndex).senderList {
-            vc.setPickerSenderList(senderList: senderList + "\n" + Helper.app.noOutgoingSenderSring)
-        }
-        
         self.present(navVC, animated: true)
-        
-        /*
-        //this block is to use the UIAlertController format
-        let vc = selectSenderAlertController()
-        vc.delegate = self
-        
-        
-        if let senderList = fetchedResultsController.object(at: selectedChatIndex).senderList {
-         
-            /*
-             //this block is for Helper.app.noOutgoingSenderSring as the first option; but means it will be top option if user has not set any sender previously
-            var finalSenderlist = ""
-            
-            if (senderList.components(separatedBy: "\n").count == 1 && shouldSetChatOutgoingSender(selectedChatIndex: selectedChatIndex)) ||  shouldSetChatOutgoingSender(selectedChatIndex: selectedChatIndex) {
-                //single sender set to incoming
-                finalSenderlist = Helper.app.noOutgoingSenderSring + "\n" + senderList
-            } else {
-                //outgoing sender has been set for chat with > 1 sender; or outgoing sender has been set for chat iwth single sender
-                finalSenderlist = senderList + "\n" + Helper.app.noOutgoingSenderSring
-            }
-
-            vc.setPickerSenderList(senderList: finalSenderlist)
-             */
-            
-            vc.setPickerSenderList(senderList: senderList + "\n" + Helper.app.noOutgoingSenderSring)
-        }
-        
-        self.present(vc, animated: true)
-         */
     }
     
     
-    func segueToSelectedChat(selectedChatIndex: IndexPath) {
-        
-        let selectedChat = fetchedResultsController.object(at: selectedChatIndex)
-        
-        let firstDate = Helper.app.convertDateDashToLocalDate(inputDate: getFirstLastDate(selectedChat: selectedChat, firstDate: true))
-        let lastDate = Helper.app.convertDateDashToLocalDate(inputDate: getFirstLastDate(selectedChat: selectedChat, firstDate: false))
-        
-        var outgoingSender = "Not set"
-        
-        if let outgoingSenderName = getOutgoingSender(selectedChatIndex: selectedChatIndex) {
-            outgoingSender = outgoingSenderName
-        }
-
-        let alertController = UIAlertController(title: selectedChat.chatName!,
-                                                message: "Chat ID: \(selectedChat.chatID)\nDate loaded: \(Helper.app.converNSDateToLocalDate(inputDate: selectedChat.dateLoad!))\nFirst message: \(firstDate)\nLast message: \(lastDate)\n# of senders: \(selectedChat.senderCount)\nOutgoing sender: \(outgoingSender)\n# of messages: \(Helper.app.formatNumber(number: getNumberOfMessagesInChat(selectedChat: selectedChat))!)\nIncoming messages: \(Helper.app.formatNumber(number: getNumberIncomingOutgoingMessags(selectedChat: selectedChat, outgoing: false))!)\nOutgoing messages: \(Helper.app.formatNumber(number: getNumberIncomingOutgoingMessags(selectedChat: selectedChat, outgoing: true))!)\n\(printAttachmentTypes(selectedChat: selectedChat)!)",
-                                                preferredStyle: .alert)
-        
-        let actionOK = UIAlertAction(title: "OK", style: .default) { (action) in
-            
-//            self.tableChats.reloadRows(at: [selectedChatIndex], with: .fade)
-            self.tableChats.deselectRow(at: selectedChatIndex, animated: true)
-        }
-        actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
-        
-        alertController.addAction(actionOK)
-        
-        self.present(alertController, animated: true, completion: {
-            
-            if let cell = self.tableChats.cellForRow(at: selectedChatIndex) as? chatTableViewCell {
-                cell.updateDirSize(chat: selectedChat)
-            }
-        })
-    }
-    
-    
-    //iOS simulator - load file on the macOS file system (ie put .zip file in ../Library/ChatLoaderPrivateDocuments/) by assigning openWithURL
+    //MARK: iOS simulator - load file on the macOS file system (ie put .zip file in ../Library/ChatLoaderPrivateDocuments/) by assigning openWithURL
     @objc func loadFileForSimulator() {
         //check directory/ChatLoader for .zip files
         
@@ -284,22 +269,13 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
                 self.present(alertController, animated: true) {}
             }
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: chatsViewControllerloadFileForSimulator(): let filenames = try fileManager.contentsOfDirectory(atPath: chatLoaderURL.path) as [String]?\n\t\(error)")
         }
     }
     
     
-    func startingVC() -> Int {
-        
-        if getTotalChats() > 0 {
-            return 0    //chatsViewController
-        } else {
-            return 1    //tutorialViewController
-        }
-    }
-    
-
     //MARK: UITableview delegate
     func numberOfSections(in tableView: UITableView) -> Int {
         return fetchedResultsController.sections!.count
@@ -336,10 +312,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-//        countOutgoingMessages(selectedChatIndex: indexPath)
-//        countIncomingMessages(selectedChatIndex: indexPath)
-        
-        if shouldSetChatOutgoingSender(selectedChatIndex: indexPath) {
+        if shouldSetChatOutgoingSender(selectedChat: fetchedResultsController.object(at: indexPath)) {
             setSender(selectedChatIndex: indexPath)
         } else {
             segueToSelectedChat(selectedChatIndex: indexPath)
@@ -419,46 +392,6 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     }
     
     
-    func showContextMenu(indexPath: IndexPath) {
-        
-        //documentation - cannot programatically trigger contextMenuConfigurationForRowAt?
-        /*
-        // 1. Get the cell for the specified row
-        guard let cell = self.tableChats.cellForRow(at: indexPath) else { return }
-            
-            // 2. Find the context menu interaction attached to the cell
-            let contextMenuInteraction = cell.interactions.compactMap { $0 as? UIContextMenuInteraction }.first
-            
-            // 3. Manually present the menu
-            contextMenuInteraction?.
-         */
-    }
-    
-    
-    func deleteChat(indexPath: IndexPath) {
-        
-        //1. delete the chat's directory first
-        do {
-            try FileManager().removeItem(at: Helper.app.getChatDirURL(chatID: fetchedResultsController.object(at: indexPath).chatID))
-        } catch {
-            print("ERROR: chatsViewController.tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath): try FileManager().removeItem(at: Helper.app.getChatDirURL(chatID: deletedChat.chatID))\n\t\(error)")
-        }
-        
-        //2. delete the chat from the managedObjectContext
-        self.context.delete(self.fetchedResultsController.object(at: indexPath))
-        
-        do {
-            try context.save()  //3. trigger the NSFetchedResultsController
-            
-            setNavigationBar()
-            updateChatStats(fromDelete: true)
-            
-        } catch {
-            print("ERROR: chatsViewController.controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?): try context.save()\n\t\(error)")
-        }
-    }
-    
-    
     //MARK: NSFetchedResultsController
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
         self.tableChats.beginUpdates()
@@ -507,26 +440,10 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         
         do {
             try fetchedResultsController.performFetch()
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: chatsViewController.setFetchedResultsController(): try fetchedResultsController.performFetch()\n\t\(error)")
         }
-    }
-    
-    
-    func getTotalMessages() -> Int {
-        
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
-        
-        do {
-            let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
-            
-            return messageResults.count
-            
-        } catch let error as NSError {
-            print("ERROR: chatsViewController.getTotalMessages(): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
-        }
-        
-        return 0
     }
     
     
@@ -539,8 +456,27 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
             
             return chatResults.count
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: chatsViewController.getTotalChats(): let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]\n\t\(error)")
+        }
+        
+        return 0
+    }
+    
+    
+    func getTotalMessages() -> Int {
+        
+        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        
+        do {
+            let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
+            
+            return messageResults.count
+            
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.getTotalMessages(): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
         }
         
         return 0
@@ -560,7 +496,8 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
                 return Helper.app.converNSDateToLocalDate(inputDate: chatResults.first!.dateLoad!)
             }
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: chatsViewController.getLastChatDate(): let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]\n\t\(error)")
         }
         
@@ -583,7 +520,8 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
                 return chat!.chatName!
             }
             
-        } catch let error as NSError {
+        }
+        catch let error as NSError {
             print("ERROR: chatsViewController.getLastChatName(): let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]\n\t\(error)")
         }
         
@@ -594,15 +532,16 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     func getNumberOfMessagesInChat(selectedChat: Chat) -> Int {
         
         do {
-            let fetchRequest2:NSFetchRequest = Message.fetchRequest()
-            fetchRequest2.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
+            let fetchRequest:NSFetchRequest = Message.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
             
-            let messageResults = try context.fetch(fetchRequest2 as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
+            let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
             
             return messageResults.count
             
-        } catch let error as NSError {
-            print("ERROR: chatsViewController.getNumberOfMessagesInChat(selectedChat: Chat): let messageResults = try context.fetch(fetchRequest2 as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.getNumberOfMessagesInChat(selectedChat: Chat): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
             
             return 0
         }
@@ -629,32 +568,15 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
             
             date = Helper.app.convertDateSlashToDash(inputDate: messageResults.first!.dateSend!)!
             
-        } catch let error as NSError {
-            print("ERROR func getFirstLastDate(selectedChat: Chat) -> (firstDate: String?, lastDate: String?) {: \(error.localizedDescription)")
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.getFirstLastDate(selectedChat: Chat, firstDate: Bool): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]: \(error)")
         }
         
         return date
     }
     
-    
-    func getNumberIncomingOutgoingMessags(selectedChat: Chat, outgoing: Bool) -> Int {
-        
-        do {
-            let fetchRequest2:NSFetchRequest = Message.fetchRequest()
-            fetchRequest2.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == %d", selectedChat, outgoing)
-            
-            let messageResults = try context.fetch(fetchRequest2 as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
-            
-            return messageResults.count
-            
-        } catch let error as NSError {
-            print("ERROR: chatsViewController.getNumberOfMessagesInChat(selectedChat: Chat): let messageResults = try context.fetch(fetchRequest2 as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
-            
-            return 0
-        }
-    }
-    
-    
+
     func printAttachmentTypes(selectedChat: Chat) -> String? {
         
         let fetchRequest:NSFetchRequest = Message.fetchRequest()
@@ -663,7 +585,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         let sortDescriptor = NSSortDescriptor(key: "attachmentType", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        fetchedResultsControllerMessages = NSFetchedResultsController(fetchRequest: fetchRequest,
+        let fetchedResultsControllerMessages = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                                       managedObjectContext: context,
                                                                       sectionNameKeyPath: "attachmentType",
                                                                       cacheName: nil)
@@ -673,9 +595,9 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         var attachmentTypes:String?
         
         do {
-            try fetchedResultsControllerMessages!.performFetch()
+            try fetchedResultsControllerMessages.performFetch()
             
-            if let sections = fetchedResultsControllerMessages!.sections {
+            if let sections = fetchedResultsControllerMessages.sections {
                 
                 attachmentTypes = ""
                 
@@ -687,23 +609,19 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
                 }
             }
         } catch let error as NSError {
-            print("ERROR: homeViewController.printAttachmentTypes(selectedChat: Chat): try fetchedResultsControllerMessages.performFetch()\n\t\(error)")
+            print("ERROR: chatsViewController.printAttachmentTypes(selectedChat: Chat): try fetchedResultsControllerMessages.performFetch()\n\t\(error)")
             
         }
-        
-        fetchedResultsControllerMessages = nil
         
         return attachmentTypes
     }
     
     
-    func shouldSetChatOutgoingSender(selectedChatIndex: IndexPath) -> Bool {
-        
-        let chat = fetchedResultsController.object(at: selectedChatIndex)
+    func shouldSetChatOutgoingSender(selectedChat: Chat) -> Bool {
         
         
         let fetchRequest:NSFetchRequest = Message.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", chat)
+        fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", selectedChat)
         
         do {
             let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
@@ -715,146 +633,84 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
                 return true
             }
             
-        } catch let error as NSError {
-            print("ERROR: chatsViewController.getTotalMessages(): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.shouldSetChatOutgoingSender(selectedChat: Chat): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
             
             return true
         }
     }     
        
     
-    
-    func getOutgoingSender(selectedChatIndex: IndexPath) -> String? {
-        
-        let chat = fetchedResultsController.object(at: selectedChatIndex)
+    func printIncomingOutgoingMessages(selectedChat: Chat, outgoing: Bool) {
         
         let fetchRequest:NSFetchRequest = Message.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", chat)
-        
-        do {
-            let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
-            
-            if messageResults.count > 0 {
-                //at least one message set as outgoing, ie. sender already set
-                if let outGoingSender = messageResults.first?.sender {
-                    return outGoingSender
-                }
-            }
-            
-        } catch let error as NSError {
-            print("ERROR: chatsViewController.getOutgoingSender(selectedChatIndex: IndexPath): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
-            
-            return nil
-        }
-        
-        //no outgoing messages
-        return nil
-    }
-    
-    
-    func countOutgoingMessages(selectedChatIndex: IndexPath) {
-        
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", fetchedResultsController.object(at: selectedChatIndex))
+        fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == %d", selectedChat, outgoing)
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageID", ascending: true)]
         
         do {
             let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
             
+            print("chatsViewController.printOutgoingMessages(selectedChat: \(selectedChat.chatName!), outgoing: \(outgoing)); # of messages \(messageResults.count):")
             for message in messageResults {
                 print("\t\(message.messageID)")
             }
             
-        } catch let error as NSError {
-            print("ERROR: chatsViewController.getTotalMessages(): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.printIncomingOutgoingMessages(selectedChat: Chat, outgoing: Bool): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
         }
     }
     
     
-    func countIncomingMessages(selectedChatIndex: IndexPath) {
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 0", fetchedResultsController.object(at: selectedChatIndex))
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageID", ascending: true)]
+    func getChatFromChatID(chatID: Int) -> Chat? {
         
+        var chat: Chat?
+        
+        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "chatID == %d", chatID)
         
         do {
-            let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
+            let chats = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]
             
-            print("****incoming messages: \(messageResults.count)")
-            for message in messageResults {
-                print("\t\(message.messageID)")
+            if chats.count > 0 {
+                chat = chats.first
             }
-            
-        } catch let error as NSError {
-            print("ERROR: chatsViewController.getTotalMessages(): let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]\n\t\(error)")
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.getChatFromChatID(chatID: Int) -> Chat?\n\t\(error)")
         }
         
+        return chat
+    }
+    
+    
+    func deleteChat(indexPath: IndexPath) {
+        
+        //1. delete the chat's directory first
+        do {
+            try FileManager().removeItem(at: Helper.app.getChatDirURL(chatID: fetchedResultsController.object(at: indexPath).chatID))
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.deleteChat(indexPath: IndexPath): try FileManager().removeItem(at: Helper.app.getChatDirURL(chatID: deletedChat.chatID))\n\t\(error)")
+        }
+        
+        //2. delete the chat from the managedObjectContext
+        self.context.delete(self.fetchedResultsController.object(at: indexPath))
+        
+        do {
+            try context.save()  //3. trigger the NSFetchedResultsController
+            
+            setNavigationBar()
+            showTutorialAfterChatDeleted()
+            
+        }
+        catch let error as NSError {
+            print("ERROR: chatsViewController.deleteChat(indexPath: IndexPath): try context.save()\n\t\(error)")
+        }
     }
     
          
-    func updateSender(senderName: String) {
-        
-        guard let indexPath = tableChats.indexPathForSelectedRow else { return }
-        
-        let currentOutgoingSender = getOutgoingSender(selectedChatIndex: indexPath)
-        
-        if currentOutgoingSender != senderName || currentOutgoingSender == nil  {
-            //outgoing sender to be changed
-            
-            let selectedChat = fetchedResultsController.object(at: indexPath)
-            
-            let fetchRequestOutgoingMessages:NSFetchRequest = Message.fetchRequest()
-            fetchRequestOutgoingMessages.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", selectedChat)
-            
-            let fetchRequestSelectedSenderMessages:NSFetchRequest = Message.fetchRequest()
-            fetchRequestSelectedSenderMessages.predicate = NSPredicate(format: "fromChat == %@ AND sender == %@", selectedChat, senderName)
-            
-            do {
-                //reset outgoing messages to incoming/false
-                let outgoingMessages = try context.fetch(fetchRequestOutgoingMessages)
-                
-                if outgoingMessages.count > 0 {
-                    for msg in outgoingMessages {
-                        msg.outgoing = false
-                        print("updated message to incoming: \(msg.messageID)")
-                    }
-                }
-                
-                //set new sender messages to outgoing
-                if senderName != Helper.app.noOutgoingSenderSring {
-                    
-                    let results = try context.fetch(fetchRequestSelectedSenderMessages)
-                    
-                    for msg in results {
-                        msg.outgoing = true
-                        print("updated message to outgoing: \(msg.messageID)")
-                    }
-                }
-                
-                //update the outgoing sender to the first item in the sender list
-                var senderList: [String] = []
-                senderList = selectedChat.senderList!.components(separatedBy: "\n")
-                
-                var count = 0
-                for sender in senderList {
-                    if sender == senderName {
-                        senderList.move(fromOffsets: IndexSet(integer: count), toOffset: 0)
-                        break
-                    }
-                    count = count + 1
-                }
-                
-                selectedChat.senderList = senderList.joined(separator: "\n")
-                
-                try context.save()
-            }
-            catch {
-                print("Failed to fetch or save: \(error.localizedDescription)")
-            }
-        } //if currentOutgoingSender != senderName || currentOutgoingSender == nil
-    }
-    
-    
     //MARK: protocolFileProcessor
     func processingStarted() {
         
@@ -909,38 +765,29 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
             self.loadingProgress = nil
             self.fp = nil
             
-            self.updateChatStats(fromDelete: false)
-            
-            
             let firstIndexPath = IndexPath(row: 0, section: 0)
             
             self.tableChats.selectRow(at: firstIndexPath, animated: true, scrollPosition: .top)
             
-            if self.shouldSetChatOutgoingSender(selectedChatIndex: firstIndexPath) {
+            if self.shouldSetChatOutgoingSender(selectedChat: self.fetchedResultsController.object(at: firstIndexPath)) {
                 self.setSender(selectedChatIndex: firstIndexPath)
-            } else {
+            }
+            else {
                 self.segueToSelectedChat(selectedChatIndex: firstIndexPath)
             }
         })
     }
  
     
-    //MARK: protocolselectSender
-    func selectedSender(senderName: String) {
-            
-        print("senderName: \(senderName)")
-        
-        //update context
-        updateSender(senderName: senderName)
-        
-        //action once chat is selected and sender updated
+    //MARK: protocolDataSelected
+    func dismissWithChanges() {
         if let selectedRow = tableChats.indexPathForSelectedRow {
             segueToSelectedChat(selectedChatIndex: selectedRow)
         }
     }
     
     
-    func noSelectedSender() {
+    func dismissNoChanges() {
         if let selectedRow = tableChats.indexPathForSelectedRow {
             tableChats.deselectRow(at: selectedRow, animated: true)
         }
