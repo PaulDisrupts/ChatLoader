@@ -4,13 +4,18 @@
 //
 //  Created by Paul Whiten on 7/9/26.
 //
+//  Used for displaying longer text in UITableViews
+//
 
 import UIKit
 
 class textFieldTableViewCell: aboutTableViewCell {
  
+    //MARK: class variables
     var textView: UITextView?
     
+    
+    //MARK: lifecycle
     override func prepareForReuse() {
         super.prepareForReuse()
         
@@ -47,6 +52,7 @@ class textFieldTableViewCell: aboutTableViewCell {
             
             textView.attributedText = attributedString
             textView.font = fontNormal
+            textView.textColor = .label
             textView.isEditable = false
             textView.isSelectable = true
             textView.isScrollEnabled = false

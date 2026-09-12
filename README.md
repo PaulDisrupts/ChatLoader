@@ -1,5 +1,5 @@
 # ChatLoader
-Loads an exported WhatsApp chat file ("WhatsApp Chat - [chatname].zip") to CoreData (MySQL).
+Loads an exported WhatsApp chat file ("WhatsApp Chat - [chatname].zip") to Core Data (MySQL).
 
 This project the foundation for apps on the App Store such as [ChatPDF](https://apps.apple.com/us/app/chatpdf-pdf-chats-converter/id1499421936) and [ChatShots](https://apps.apple.com/us/app/chatshots/id1018833033)
 

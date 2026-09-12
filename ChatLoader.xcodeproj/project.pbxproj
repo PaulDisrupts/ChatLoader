@@ -20,7 +20,6 @@
 		9CC4D00F25D6CC8F00390D79 /* fileProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC4D00E25D6CC8F00390D79 /* fileProcessor.swift */; };
 		9CD1E56325D57F3A0012A02C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56225D57F3A0012A02C /* AppDelegate.swift */; };
 		9CD1E56525D57F3A0012A02C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56425D57F3A0012A02C /* SceneDelegate.swift */; };
-		9CD1E56A25D57F3A0012A02C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9CD1E56825D57F3A0012A02C /* Main.storyboard */; };
 		9CD1E56D25D57F3A0012A02C /* ChatLoader.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E56B25D57F3A0012A02C /* ChatLoader.xcdatamodeld */; };
 		9CD1E56F25D57F3C0012A02C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9CD1E56E25D57F3C0012A02C /* Assets.xcassets */; };
 		9CD1E57225D57F3C0012A02C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9CD1E57025D57F3C0012A02C /* LaunchScreen.storyboard */; };
@@ -82,7 +81,6 @@
 		9CD1E55F25D57F3A0012A02C /* ChatLoader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatLoader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CD1E56225D57F3A0012A02C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9CD1E56425D57F3A0012A02C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		9CD1E56925D57F3A0012A02C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9CD1E56C25D57F3A0012A02C /* ChatLoader.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ChatLoader.xcdatamodel; sourceTree = "<group>"; };
 		9CD1E56E25D57F3C0012A02C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9CD1E57125D57F3C0012A02C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -225,7 +223,6 @@
 				9CC4D00A25D6CAE500390D79 /* Controller */,
 				9CD1E56225D57F3A0012A02C /* AppDelegate.swift */,
 				9CD1E56425D57F3A0012A02C /* SceneDelegate.swift */,
-				9CD1E56825D57F3A0012A02C /* Main.storyboard */,
 				9CD1E56E25D57F3C0012A02C /* Assets.xcassets */,
 				9CD1E57025D57F3C0012A02C /* LaunchScreen.storyboard */,
 				9CD1E57325D57F3C0012A02C /* Info.plist */,
@@ -407,7 +404,6 @@
 				9CD1E57225D57F3C0012A02C /* LaunchScreen.storyboard in Resources */,
 				9CD1E56F25D57F3C0012A02C /* Assets.xcassets in Resources */,
 				9C29D3302691EC100058EF3B /* README.md in Resources */,
-				9CD1E56A25D57F3A0012A02C /* Main.storyboard in Resources */,
 				AFBF7DB22FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -493,14 +489,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		9CD1E56825D57F3A0012A02C /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				9CD1E56925D57F3A0012A02C /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		9CD1E57025D57F3C0012A02C /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -640,12 +628,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = ChatLoader/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4;
+				MARKETING_VERSION = 0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pmw.ChatLoader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -664,12 +653,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = ChatLoader/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4;
+				MARKETING_VERSION = 0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pmw.ChatLoader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

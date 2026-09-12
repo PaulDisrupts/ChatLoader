@@ -4,6 +4,8 @@
 //
 //  Created by Paul Whiten on 2/9/26.
 //
+//  File for documenation on ChatLoader and exported WhatsApp chat details
+//
 
 /*
  
@@ -12,6 +14,7 @@
  
     ChatLoader v0.1 verified against WhatsApp v2.21.90.14
     ChatLoader v0.2 verified against WhatsApp v2.26.10.74
+    ChatLoader v0.9 verified against WhatsApp v26.36.74
  
      * The chat transcript is exported to file "_chat.txt" (UTF8 encoding); archived within exported .zip file:
          "WhatsApp Chat - [chat_name].zip" (along with any attachments)
@@ -95,6 +98,8 @@
              [DD/M/YY, HH:mm:ss] sender:
 
      * Note that sometimes the last message in a chat may have the (U+201E) char appended to it, unable to determine the specific circumstances for this
+ 
+     * The last line of the _chat.txt file is blank, ie the last characters (from the last message) are (U+201E)+\r\n
 
 
  General notes on user sent messages/messages received from another user ('Text' or attachments)
@@ -214,7 +219,7 @@
              sample message  =
                  (U+201E)[DD/M/YY, HH:mm:ss] sender: (U+201E)<attached: 00000001-STICKER-yyyy-MM-dd-HH-mm-ss.mp4>
  
-        Live photos are exported as two separate messages:
+        Live Photos are exported as two separate messages:
             1) as a photos, using the standard format for photos
             2) as a video, using the standard format for vidoes
 
@@ -282,7 +287,7 @@
 
      * 'Reply' indicators to messages are *NOT* exported
  
-     * 'Captions' to images are exported with the format:
+     * 'Captions' to images (including the image message of a Live Photo, but not the video message) are exported with the format:
             If exported with "Attach media":
                 (U+201E)[DD/M/YY, HH:mm:ss] sender: (U+201E)_caption message_<attached: 00000001-PHOTO-yyyy-MM-dd-HH-mm-ss.jpg>
             
@@ -290,7 +295,7 @@
                 (U+201E)[DD/M/YY, HH:mm:ss] sender: (U+201E)_caption message_ image omitted
                 
 
-     * 'Captions' to attachments are *NOT* exported (**here** tbc)
+     * 'Captions' to attachments are *NOT* exported
          (NOTE: 'Captions' to videos from the official WhatsApp chat account *are* exported with the format:
              (U+201E)[DD/M/YY, HH:mm:ss] sender: (U+201E)_caption message_/n<attached: 00000001-VIDEO-yyyy-MM-dd-HH-mm-ss.mp4>
          )
@@ -332,7 +337,7 @@
  
      * Member tags from group chats are *NOT* exported
  
-     * Senders who have left the group (or changed numbers) are prefixed with "~"
+     * Senders who have left the group (or changed numbers) names are prefixed with "~"
  
      * Attached message history (when user added to a group chat) is exported as per normal, however the message stating "Message hisotry sent by <<sender>>. Learn more" is exported as:
                 [DD/M/YY, HH:mm:ss] sender:
@@ -490,7 +495,7 @@
               <attached: messageID-STICKER-timestamp.webp>
           - a resized copy of the source sticker (when "4. Include images" = true AND exported chat file "Attach Media")
 
-     * Live photos are treated as two separate messages that use the standard format: one message as an image attachment (which may have a caption); and one message as a video attachment
+     * Live Photos are treated as two separate messages that use the standard format: one message as an image attachment (which may have a caption); and one message as a video attachment
  
      * Messages in the generated PDF with an image/placeholder icon contain the underlying 'normal' message (i.e "X omitted" or the exported attachment syntax) in a transparent text colour, i.e it can still be searched/selected in a PDF viewer app
 */
@@ -577,11 +582,11 @@
  
  a) **launched** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file:
         Notification is posted in: ScenDelegate.scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions)
-            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL: url])
 
  b) **opened from background** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file:
         Notification is posted in: ScenDelegate.scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
-            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL: url])
  
  3) ChatLoader processing file:
     mainTabBarViewController.setNotifications()
@@ -630,3 +635,12 @@
  107            Document       document omitted        "iconDocument 144.png"
  108            Sticker        sticker omitted         "iconImage 144.png"
 */
+
+/*
+ ChatLoader Core Data model
+ **************************
+ 
+ Chat - for storing details of a WhatsApp chat; 1-to-many with Message
+ Message - for storing the individual messages in a WhatsApp chat; Many-to-1 with Chat
+ 
+ */

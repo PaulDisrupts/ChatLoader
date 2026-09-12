@@ -4,6 +4,7 @@
 //
 //  Created by Paul Michael Whiten on 27/6/21.
 //
+//  For storing details of a WhatsApp chat; 1-to-many with Message
 //
 
 import Foundation
@@ -16,7 +17,7 @@ extension Chat {
         return NSFetchRequest<Chat>(entityName: "Chat")
     }
 
-    @NSManaged public var chatID: Int16
+    @NSManaged public var chatID: Int16         //first Chat loaded will be 0001
     @NSManaged public var chatName: String?
     @NSManaged public var dateLoad: NSDate?
     @NSManaged public var senderCount: Int16

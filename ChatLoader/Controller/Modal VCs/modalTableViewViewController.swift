@@ -4,14 +4,22 @@
 //
 //  Created by Paul Whiten on 7/9/26.
 //
+//  Used to display data
+//
+//  Usage:
+//      - initalise from a ViewController
+//      - set the delegate: protocolDataChanged? as the ViewController
+//      - set selectedChat: Chat? from the delegate ViewController
+//      - wrap this class in a UINavigationController
+//      - present the UINavigationController from the delegate ViewContoller
+//
 
 import UIKit
 import CoreData
 
 class modalTableViewViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     
-    
-    //MARK: Class variables
+    //MARK: class variables
     var tableData = UITableView()
     let cellReuseIdentifierAbout = "reuseIdentifier"
     
@@ -27,15 +35,15 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     
     var rowValues: [String] = []
     
-    var selectedChat: Chat?
+    var selectedChat: Chat? //Chat used to populate data
     
-    var delegate: protocolDataSelected?
+    var delegate: protocolDataChanged? //notify presenting ViewController of any changes; no changes made from this class
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
-    //MARK: VC Lifecycle
+    //MARK: lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -43,14 +51,18 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
         let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(dismissSelf))
         closeButton.tintColor = Helper.app.colorPrimary
         
+/*
+        //optional superficial changes
         if #available(iOS 26.0, *) {
             closeButton.style = .prominent
         }
+*/
         
         self.navigationItem.leftBarButtonItems = [closeButton]
         self.navigationItem.largeTitleDisplayMode = .never
         
         if let selectedChat {
+            
             self.navigationItem.title = selectedChat.chatName
             
             let firstDate = Helper.app.convertDateDashToLocalDate(inputDate: getFirstLastDate(selectedChat: selectedChat, firstDate: true))
@@ -62,6 +74,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
                 outgoingSender = outgoingSenderName
             }
             
+            
             rowValues += [String(selectedChat.chatID),
                           Helper.app.converNSDateToLocalDate(inputDate: selectedChat.dateLoad!),
                           firstDate,
@@ -72,7 +85,6 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
                           Helper.app.formatNumber(number: getNumberIncomingOutgoingMessages(selectedChat: selectedChat, outgoing: false))!,
                           Helper.app.formatNumber(number: getNumberIncomingOutgoingMessages(selectedChat: selectedChat, outgoing: true))!
                           ]
-            
             
             addAttachmentTypes(selectedChat: selectedChat)
         }
@@ -100,7 +112,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        self.delegate?.dismissNoChanges()
+        self.delegate?.protocolDataChanged_noChanges()
     }
     
     @objc func dismissSelf() {
@@ -108,7 +120,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     }
     
     
-    //MARK: UITableview delegate
+    //MARK: UITableViewDelegate
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -134,7 +146,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifierAbout, for: indexPath) as? aboutTableViewCell
         else { return UITableViewCell() }
         
-        cell.isUserInteractionEnabled = true
+        cell.isUserInteractionEnabled = false
                 
         cell.setupCellViews(title: rowTitles[indexPath.row], value: rowValues[indexPath.row], action: nil)
         
@@ -142,18 +154,18 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     }
     
     
-    
     //MARK: Core Data
     func getFirstLastDate(selectedChat: Chat, firstDate: Bool) -> String {
         
         //first message date
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
         fetchRequest.fetchLimit = 1
         
         if firstDate {
             fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageID", ascending: true)]
-        } else {
+        }
+        else {
             fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageID", ascending: false)]
         }
         
@@ -175,7 +187,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     
     func getOutgoingSender(selectedChat: Chat) -> String? {
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", selectedChat)
         
         do {
@@ -203,7 +215,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     func getNumberOfMessagesInChat(selectedChat: Chat) -> Int {
         
         do {
-            let fetchRequest:NSFetchRequest = Message.fetchRequest()
+            let fetchRequest: NSFetchRequest = Message.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
             
             let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
@@ -222,7 +234,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     func getNumberIncomingOutgoingMessages(selectedChat: Chat, outgoing: Bool) -> Int {
         
         do {
-            let fetchRequest:NSFetchRequest = Message.fetchRequest()
+            let fetchRequest: NSFetchRequest = Message.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == %d", selectedChat, outgoing)
             
             let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
@@ -239,7 +251,7 @@ class modalTableViewViewController: UIViewController, UITableViewDataSource, UIT
     
     func addAttachmentTypes(selectedChat: Chat) {
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
         
         let sortDescriptor = NSSortDescriptor(key: "attachmentType", ascending: true)

@@ -1,32 +1,32 @@
 //
 //  chatsViewController.swift
-//  VoiceXporter
+//  ChatLoader
 //
 //  Created by Paul Whiten on 24/5/26.
+//
+//  Shows the loaded Chat objects, ie loaded WhatsApp chats
+//  Selecting a chat shows details of the chat
+//  Can change the outgoing sender of chats
 //
 
 import UIKit
 import CoreData
 
-class chatsViewController: UIViewController, protocolFileProcessor, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate, protocolDataSelected {
+class chatsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate, protocolDataChanged {
     
-    //MARK: Class variables
-    var loadingProgress:loadingAlertController?       //UIAlertController subclass to update loading progress
-    
-    var tutorialShown:Bool = false          //used to show tutorial when # of Chats loaded == 0, only show once per instance of app
-    
-    var fp:fileProcessor?                   //object to process the imported .zip (_chat.txt) file and save to CoreData
-    
+    //MARK: class variables
+    var loadingProgress: loadingAlertController?       //UIAlertController subclass to update loading progress
+
     var tableChats = UITableView()
     let cellReuseIdentifier = "reuseIdentifier"
-    let estimatedRowHeight:CGFloat = 58         //spacer + labelHeight + spacer + labelHeight + 2*spacer = 4 + 21 + 4 + 21 + 2*4 = 58
+    let estimatedRowHeight: CGFloat = 62         //2*spacer + labelHeight + spacer + labelHeight + 2*spacer = 2*4 + 21 + 2*4 + 21 + 2*4 = 62
     
-    //CoreData
+    //Core Data
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     var fetchedResultsController:NSFetchedResultsController<Chat> = NSFetchedResultsController()
     
     
-    //MARK: VC Lifecycle
+    //MARK: lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -47,14 +47,14 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     }
     
 
-    //MARK: Class functions
+    //MARK: class functions
     func setTableView() {
         
         tableChats.dataSource = self
         tableChats.delegate = self
         tableChats.register(chatTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifier)
         
-        tableChats.backgroundColor = .white
+        tableChats.backgroundColor = UIColor.secondarySystemGroupedBackground    //optional superficial changes: UIColor.secondarySystemGroupedBackground
         tableChats.rowHeight = UITableView.automaticDimension
         tableChats.estimatedRowHeight = self.estimatedRowHeight
         
@@ -77,7 +77,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         //if no chats loaded, default to tutorialViewController()
         if Helper.app.showTutorial(numberOfChats: getTotalChats()) {
             //only show tutorial on deleting Chat (tutorial will trigger on launch if no Chats loaded)
-            if let tabVC = self.getTabBarController() {
+            if let tabVC = self.extension_getTabBarController() {
                 tabVC.selectedIndex = 1
             }
         }
@@ -95,9 +95,20 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     #endif
         
         self.navigationController?.navigationBar.prefersLargeTitles = true
-//        self.navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: Helper.app.colorPrimary]
+        
+/*
+        //optional superficial changes
+        self.navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: Helper.app.colorPrimary]
 
+        let appearance = UINavigationBarAppearance()
+        appearance.largeTitleTextAttributes = [
+            .font: UIFont.systemFont(ofSize: 28, weight: .bold)
+        ]
+        self.navigationController?.navigationBar.standardAppearance = appearance
+*/
+        
         self.navigationItem.title = "Imported chats"
+        
         
         if #available(iOS 26.0, *) {
             
@@ -105,44 +116,34 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
             
             if numberChats == 0 {
                 self.navigationItem.subtitle = "Your loaded chats are stored here"
-            } else if numberChats == 1 {
+            }
+            else if numberChats == 1 {
                 self.navigationItem.subtitle = "\(String(numberChats)) loaded chat"
-            } else {
+            }
+            else {
                 self.navigationItem.subtitle = "\(String(numberChats)) loaded chats"
             }
         }
     }
     
     
-    func loadFileFromURL(fileURL:URL) {
+    func loadFileFromURL(fileURL: URL) {
         
-        if !Helper.app.isLoading() {
-            Helper.app.setIsLoading(isLoading: true)    //this is the *only* place isLoading can be set to true
-            
-            //reset tableChats
-            if self.tableChats.indexPathForSelectedRow != nil {
-                self.tableChats.deselectRow(at: self.tableChats.indexPathForSelectedRow!, animated: true)
-            }
-            
-            if getTotalChats() > 0 {
-                self.tableChats.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
-            }
-            
-            //process the .zip file
-            fp = fileProcessor(delegate: self, inputFile: fileURL)
+        //reset tableChats
+        if self.tableChats.indexPathForSelectedRow != nil {
+            self.tableChats.deselectRow(at: self.tableChats.indexPathForSelectedRow!, animated: true)
         }
-        else {
-            //a file is currently being loaded, delete the new file
-            
-            let fileManager = FileManager()
-            
-            do {
-                try fileManager.removeItem(at: fileURL)
-            }
-            catch let error as NSError {
-                print("ERROR: chatsViewController.loadFileFromURL(fileURL:URL): try fileManager.removeItem(at: url)\n\t\(error)")
-            }
+        
+        if getTotalChats() > 0 {
+            self.tableChats.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
         }
+        
+        //process the WhatsApp chat .zip file
+        loadingProgress = loadingAlertController()
+        loadingProgress?.delegate = self
+        loadingProgress?.fileURL = fileURL
+        
+        self.present(loadingProgress!, animated: true)
     }
     
 
@@ -150,7 +151,8 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         
         if getTotalChats() > 0 {
             return 0    //chatsViewController
-        } else {
+        }
+        else {
             return 1    //tutorialViewController
         }
     }
@@ -163,11 +165,11 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         // 1. Get the cell for the specified row
         guard let cell = self.tableChats.cellForRow(at: indexPath) else { return }
             
-            // 2. Find the context menu interaction attached to the cell
-            let contextMenuInteraction = cell.interactions.compactMap { $0 as? UIContextMenuInteraction }.first
+        // 2. Find the context menu interaction attached to the cell
+        let contextMenuInteraction = cell.interactions.compactMap { $0 as? UIContextMenuInteraction }.first
             
-            // 3. Manually present the menu
-            contextMenuInteraction?.
+        // 3. Manually present the menu
+        contextMenuInteraction?.
          */
     }
     
@@ -178,10 +180,10 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         let selectedChat = fetchedResultsController.object(at: selectedChatIndex)
         
         let vc = modalTableViewViewController()
-        vc.selectedChat = selectedChat
         vc.delegate = self
-        let navVC = UINavigationController(rootViewController: vc)
+        vc.selectedChat = selectedChat
         
+        let navVC = UINavigationController(rootViewController: vc)
         navVC.modalPresentationStyle = .pageSheet
         
         if #available(iOS 15.0, *) {
@@ -205,8 +207,9 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     func setSender(selectedChatIndex: IndexPath) {
         
         let vc = selectSenderViewController()
-        vc.selectedChat = fetchedResultsController.object(at: selectedChatIndex)
         vc.delegate = self
+        vc.selectedChat = fetchedResultsController.object(at: selectedChatIndex)
+        
         
         let navVC = UINavigationController(rootViewController: vc)
         navVC.modalPresentationStyle = .pageSheet
@@ -224,11 +227,12 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     }
     
     
-    //MARK: iOS simulator - load file on the macOS file system (ie put .zip file in ../Library/ChatLoaderPrivateDocuments/) by assigning openWithURL
+    //MARK: iOS simulator
+    //load file on the macOS file system (ie put WhatsApp chat .zip file in ../Library/ChatLoaderPrivateDocuments/) by assigning openWithURL
     @objc func loadFileForSimulator() {
-        //check directory/ChatLoader for .zip files
+        //check directory/ChatLoader for WhatsApp chat .zip files
         
-        var chatFileFound:Bool = false
+        var chatFileFound :Bool = false
         var openWithURL: URL?
         
         let fileManager = FileManager()
@@ -253,11 +257,12 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
             if chatFileFound && openWithURL != nil {
                 loadFileFromURL(fileURL: openWithURL!)
                 
-            } else {
-                print("Place the exported whatsapp chat .zip file in directory:")
+            }
+            else {
+                print("Place the exported WhatsApp chat .zip file in directory:")
                 print(chatLoaderURL)
                 
-                let alertController = UIAlertController(title: ".zip file not found", message: "Place the .zip file in:\n\(chatLoaderURL.path)", preferredStyle: .alert)
+                let alertController = UIAlertController(title: ".zip file not found", message: "Place the WhatsApp chat .zip file in:\n\(chatLoaderURL.path)", preferredStyle: .alert)
                 
                 let actionOK = UIAlertAction(title: "Copy directory path", style: .default) { (action) in
                     UIPasteboard.general.string = chatLoaderURL.path
@@ -276,7 +281,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     }
     
     
-    //MARK: UITableview delegate
+    //MARK: UITableViewDelegate
     func numberOfSections(in tableView: UITableView) -> Int {
         return fetchedResultsController.sections!.count
     }
@@ -314,7 +319,8 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         
         if shouldSetChatOutgoingSender(selectedChat: fetchedResultsController.object(at: indexPath)) {
             setSender(selectedChatIndex: indexPath)
-        } else {
+        }
+        else {
             segueToSelectedChat(selectedChatIndex: indexPath)
         }
     }
@@ -426,12 +432,12 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     }
     
     
-    //MARK: CoreData functions
+    //MARK: Core Data
     func setFetchedResultsController() {
         
         context.mergePolicy = NSErrorMergePolicy
         
-        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        let fetchRequest: NSFetchRequest = Chat.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "chatID", ascending: false)]
         
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
@@ -449,7 +455,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     
     func getTotalChats() -> Int {
         
-        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        let fetchRequest: NSFetchRequest = Chat.fetchRequest()
         
         do {
             let chatResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]
@@ -467,7 +473,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     
     func getTotalMessages() -> Int {
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         
         do {
             let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
@@ -485,7 +491,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     
     func getLastChatDate() -> String {
         
-        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        let fetchRequest: NSFetchRequest = Chat.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "chatID", ascending: false)]
         fetchRequest.fetchLimit = 1
         
@@ -507,7 +513,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     
     func getLastChatName() -> String {
         
-        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        let fetchRequest: NSFetchRequest = Chat.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "chatID", ascending: false)]
         fetchRequest.fetchLimit = 1
         
@@ -532,7 +538,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     func getNumberOfMessagesInChat(selectedChat: Chat) -> Int {
         
         do {
-            let fetchRequest:NSFetchRequest = Message.fetchRequest()
+            let fetchRequest: NSFetchRequest = Message.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
             
             let messageResults = try context.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
@@ -551,13 +557,14 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     func getFirstLastDate(selectedChat: Chat, firstDate: Bool) -> String {
         
         //first message date
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
         fetchRequest.fetchLimit = 1
         
         if firstDate {
             fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageID", ascending: true)]
-        } else {
+        }
+        else {
             fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageID", ascending: false)]
         }
         
@@ -579,7 +586,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
 
     func printAttachmentTypes(selectedChat: Chat) -> String? {
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@", selectedChat)
         
         let sortDescriptor = NSSortDescriptor(key: "attachmentType", ascending: true)
@@ -590,9 +597,9 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
                                                                       sectionNameKeyPath: "attachmentType",
                                                                       cacheName: nil)
         
-        // do *not* set fetchedResultsControllerMessages.delegate = self; will cause issues with .delete
+        //do *not* set fetchedResultsControllerMessages.delegate = self; will cause issues with .delete
         
-        var attachmentTypes:String?
+        var attachmentTypes: String?
         
         do {
             try fetchedResultsControllerMessages.performFetch()
@@ -620,7 +627,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     func shouldSetChatOutgoingSender(selectedChat: Chat) -> Bool {
         
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", selectedChat)
         
         do {
@@ -629,7 +636,8 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
             if messageResults.count > 0 {
                 //at least one message set as outgoing, ie. sender already set
                 return false
-            } else {
+            }
+            else {
                 return true
             }
             
@@ -644,7 +652,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
     
     func printIncomingOutgoingMessages(selectedChat: Chat, outgoing: Bool) {
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == %d", selectedChat, outgoing)
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "messageID", ascending: true)]
         
@@ -667,7 +675,7 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         
         var chat: Chat?
         
-        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        let fetchRequest: NSFetchRequest = Chat.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "chatID == %d", chatID)
         
         do {
@@ -710,88 +718,50 @@ class chatsViewController: UIViewController, protocolFileProcessor, UITableViewD
         }
     }
     
-         
-    //MARK: protocolFileProcessor
-    func processingStarted() {
+    
+    //MARK: protocolDataChanged
+    func protocolDataChanged_noChanges() {
         
-        //loadingAlertController to show progress of loading chat
-        loadingProgress = loadingAlertController()
-        self.present(loadingProgress!, animated: true)
-    }
-    
-    
-    func updateProgress(percentComplete:Int) {
-        //update loadingProgress:loadingAlertController? with loading status
-        if loadingProgress != nil {
-            loadingProgress!.updateProgresss(progress: percentComplete)
-        }
-    }
-    
-    
-    func processingError(errorMessage: String) {
-        
-        //dismiss the UIAlertController from loadingProgress:loadingAlertController?
-        self.dismiss(animated: true, completion: {
-            
-            //reset variables
-            Helper.app.setIsLoading(isLoading: false)
-            self.loadingProgress = nil
-            self.fp = nil
-            
-            
-            //alert the user that there was an error loading the file
-            let alertController = UIAlertController(title: "Apologies, I don't recognize the file", message: "Please make sure the region format of the chat history file matches the region settings of your phone (\(Helper.app.getLocale()));\nOr try another chat file\nError: \(errorMessage)", preferredStyle: .alert)
-            
-            let actionOK = UIAlertAction(title: "Ok", style: .cancel)
-            actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
-            
-            alertController.addAction(actionOK)
-            
-            self.present(alertController, animated: true) {}
-        })
-    }
-    
-    
-    func processingSaving() {}
-    
-    
-    func processingComplete() {
-        
-        //dismiss the UIAlertController from loadingProgress:loadingAlertController?
-        self.dismiss(animated: true, completion: {
-            
-            //reset variables
-            Helper.app.setIsLoading(isLoading: false)
-            self.loadingProgress = nil
-            self.fp = nil
-            
-            let firstIndexPath = IndexPath(row: 0, section: 0)
-            
-            self.tableChats.selectRow(at: firstIndexPath, animated: true, scrollPosition: .top)
-            
-            if self.shouldSetChatOutgoingSender(selectedChat: self.fetchedResultsController.object(at: firstIndexPath)) {
-                self.setSender(selectedChatIndex: firstIndexPath)
-            }
-            else {
-                self.segueToSelectedChat(selectedChatIndex: firstIndexPath)
-            }
-        })
-    }
- 
-    
-    //MARK: protocolDataSelected
-    func dismissWithChanges() {
-        if let selectedRow = tableChats.indexPathForSelectedRow {
-            segueToSelectedChat(selectedChatIndex: selectedRow)
-        }
-    }
-    
-    
-    func dismissNoChanges() {
         if let selectedRow = tableChats.indexPathForSelectedRow {
             tableChats.deselectRow(at: selectedRow, animated: true)
         }
     }
     
+    
+    func protocolDataChanged_chatOutgoingSenderChanged() {
+        
+        if let selectedRow = tableChats.indexPathForSelectedRow {
+            segueToSelectedChat(selectedChatIndex: selectedRow)
+        }
+    }
+    
+
+    func protocolDataChanged_chatLoaded() {
+
+        let firstIndexPath = IndexPath(row: 0, section: 0)  //inserted row (ie the most recent loaded Chat) will always be the first row if not using table sections
+        
+        self.tableChats.selectRow(at: firstIndexPath, animated: true, scrollPosition: .top)
+        
+        if self.shouldSetChatOutgoingSender(selectedChat: self.fetchedResultsController.object(at: firstIndexPath)) {
+            self.setSender(selectedChatIndex: firstIndexPath)
+        }
+        else {
+            self.segueToSelectedChat(selectedChatIndex: firstIndexPath)
+        }
+    }
+    
+    
+    func protocolDataChanged_error(errorMessage: String) {
+        
+        //alert the user that there was an error loading the file
+        let alertController = UIAlertController(title: (errorMessage), message: "Please make sure the region format of the chat history file matches the region settings of your phone (\(Helper.app.getLocale()));\n\nAlternately, try another chat file", preferredStyle: .alert)
+        
+        let actionOK = UIAlertAction(title: "Ok", style: .cancel)
+        actionOK.setValue(Helper.app.colorPrimary, forKey: "titleTextColor")
+        
+        alertController.addAction(actionOK)
+        
+        self.present(alertController, animated: true) {}
+    }
 }
 

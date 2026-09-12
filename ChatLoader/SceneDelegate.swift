@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         //ChatLoader **opened from background** via UIActivityViewController/'Share'/"Copy to app" from an exported WhatsApp chat .zip file
         guard let url = URLContexts.first?.url else { return }
         
-        NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
+        NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL: url])
     }
     
 
@@ -25,15 +25,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+
+        guard let windowScene = (scene as? UIWindowScene) else { return }
         
+        let tempWindow = UIWindow(windowScene: windowScene)
         
         //setup root tab view controller
-        self.window?.rootViewController = mainTabBarViewController()
+        tempWindow.rootViewController = mainTabBarViewController()
+        
+        self.window = tempWindow
+        tempWindow.makeKeyAndVisible()
         
         //ChatLoader **launched** via UIActivityViewController/'Share'/"Copy to app" from an exported Whatsapp chat .zip file
         if let url = connectionOptions.urlContexts.first?.url {
-            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL:url])
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Helper.app.notificationRawValue), object: self, userInfo:[Helper.app.copytoAppURL: url])
         }
     }
 

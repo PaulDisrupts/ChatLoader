@@ -4,6 +4,8 @@
 //
 //  Created by Paul Whiten on 29/4/26.
 //
+//  Shows a video tutorial on how to import a WhatsApp chat .zip file into ChatLoader
+//
 
 import Foundation
 
@@ -13,7 +15,7 @@ import AVFoundation
 
 class tutorialViewController: UIViewController {
     
-    
+    //MARK: class variables
     let playerController = AVPlayerViewController()
     let playerItem = AVPlayerItem(url: Bundle.main.url(forResource: "ChatLoader_export tutorial", withExtension:"mp4")!)
     
@@ -21,10 +23,12 @@ class tutorialViewController: UIViewController {
     var playerLoop: AVPlayerLooper?
     
     
-    //MARK: view lifecycle
+    //MARK: lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.view.backgroundColor = UIColor.systemGroupedBackground
+        self.navigationController?.navigationBar.backgroundColor = .clear
         self.navigationItem.title  = "How to export chats from WhatsApp"
         
         playerQueue = AVQueuePlayer(playerItem: playerItem)
@@ -51,4 +55,5 @@ class tutorialViewController: UIViewController {
         
         playerQueue!.play()
     }
+    
 }

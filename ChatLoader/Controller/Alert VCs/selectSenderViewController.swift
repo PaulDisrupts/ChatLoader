@@ -4,26 +4,34 @@
 //
 //  Created by Paul Whiten on 5/9/26.
 //
+//  Used to select an outgoing sender in a Chat
+//
+//  Usage:
+//      - initalise from a ViewController
+//      - set the delegate: protocolDataChanged? as the ViewController
+//      - set selectedChat: Chat? from the delegate ViewController
+//      - wrap this class in a UINavigationController
+//      - present the UINavigationController from the delegate ViewContoller
+//
 
 import UIKit
 import CoreData
 
-class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+class selectSenderViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
     
-    let alertHeight:CGFloat = 324   //default width of UIAlertController (style .alert) in iOS18 is 270 points (iOS26 is 320?); default height (with no buttons) is 64 points; default height with one button is 108.33 points (64 + 44)
-    let spacer:CGFloat = 8          //spacer for progressViewLoading:UIProgressView
-    let headerHeight: CGFloat = 44  //default button height, used for the UIAlert header
-    let pickerHeight: CGFloat = 216          //default UIPickerView height (pre iOS26)
+    //MARK: class variables
+    let spacer: CGFloat = 8          //spacer for progressViewLoading:UIProgressView
+    let pickerHeight: CGFloat = 216 //default UIPickerView height (pre iOS26)
     
-    var delegate: protocolDataSelected?
+    var delegate: protocolDataChanged? //notify presenting ViewController of any changes, ie to outgoing sender
     
-    var picker:UIPickerView?
-    var pickerSenderList:[String]?
-    var selectedSender:String?
+    var picker: UIPickerView?
+    var pickerSenderList: [String]?
+    var selectedSender: String?
     
-    var selectButton: UIBarButtonItem?
+    var selectButton: UIBarButtonItem?  //user chooses a sender
     
-    var senderSelected: Bool = false
+    var senderSelected: Bool = false    //user has made changes, determines how to dismiss this class and notify its delegate: protocolDataSelected?
     
     //CoreData
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -31,7 +39,7 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
     var selectedChat: Chat?
     
     
-    //MARK: view lifecycle
+    //MARK: lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -77,7 +85,7 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
         super.viewWillDisappear(animated)
         
         if !senderSelected {
-            self.delegate?.dismissNoChanges()
+            self.delegate?.protocolDataChanged_noChanges()
         }
     }
 
@@ -95,12 +103,12 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
         updateSender(senderName: self.pickerSenderList![self.picker!.selectedRow(inComponent: 0)])
         
         self.dismiss(animated: true, completion: {
-            self.delegate?.dismissWithChanges()//this has to execute after the dismiss animation completes to prevent "Attempt to present <UIAlertController: > on <ChatLoader.mainTabBarViewController: > (from <ChatLoader.chatsViewController: >) which is already presenting <UINavigationController: >"
+            self.delegate?.protocolDataChanged_chatOutgoingSenderChanged()//this has to execute after the dismiss animation completes to prevent "Attempt to present <UIAlertController: > on <ChatLoader.mainTabBarViewController: > (from <ChatLoader.chatsViewController: >) which is already presenting <UINavigationController: >"
         })
     }
     
     
-    //MARK: UIPickerView
+    //MARK: UIPickerViewDelegate
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
@@ -117,7 +125,8 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
             
             return pickerSenderList!.count
             
-        } else {
+        }
+        else {
             return 1
         }
     }
@@ -131,7 +140,7 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {}
     
     
-    //MARK: core data
+    //MARK: Core Data
     func updateSender(senderName: String) {
         
         let currentOutgoingSender = getOutgoingSender()
@@ -141,10 +150,10 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
         if currentOutgoingSender != senderName || currentOutgoingSender == nil  {
             //outgoing sender to be changed
             
-            let fetchRequestOutgoingMessages:NSFetchRequest = Message.fetchRequest()
+            let fetchRequestOutgoingMessages: NSFetchRequest = Message.fetchRequest()
             fetchRequestOutgoingMessages.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", selectedChat!)
             
-            let fetchRequestSelectedSenderMessages:NSFetchRequest = Message.fetchRequest()
+            let fetchRequestSelectedSenderMessages: NSFetchRequest = Message.fetchRequest()
             fetchRequestSelectedSenderMessages.predicate = NSPredicate(format: "fromChat == %@ AND sender == %@", selectedChat!, senderName)
             
             do {
@@ -154,8 +163,9 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
                 if outgoingMessages.count > 0 {
                     for msg in outgoingMessages {
                         msg.outgoing = false
-                        print("updated message to incoming: \(msg.messageID)")
                     }
+                    
+                    print("selectSenderViewController.updateSender(senderName: String): # of messages set to incoming: \(outgoingMessages.count)")
                 }
                 
                 //set new sender messages to outgoing
@@ -165,8 +175,9 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
                     
                     for msg in results {
                         msg.outgoing = true
-                        print("updated message to outgoing: \(msg.messageID)")
                     }
+                    
+                    print("selectSenderViewController.updateSender(senderName: String): # of messages set to outgoing: \(results.count)")
                 }
                 
                 //update the outgoing sender to the first item in the sender list
@@ -189,7 +200,7 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
             catch let error as NSError {
                 print("selectSenderViewController.updateSender(senderName: String): let results = try context.fetch(fetchRequestSelectedSenderMessages)_let results = try context.fetch(fetchRequestSelectedSenderMessages))_try context.save(): \(error)")
                 
-                senderSelected = false  //save failed; trigger self.delegate?.dismissNoChanges() in viewWillDisappear(_ animated: Bool)
+                senderSelected = false  //save failed; trigger self.delegate?.noUpdates() in viewWillDisappear(_ animated: Bool)
             }
         } //if currentOutgoingSender != senderName || currentOutgoingSender == nil
     }
@@ -197,7 +208,7 @@ class selectSenderViewController: UIViewController, UIPickerViewDelegate, UIPick
     
     func getOutgoingSender() -> String? {
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "fromChat == %@ AND outgoing == 1", selectedChat!)
         
         do {

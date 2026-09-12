@@ -1,19 +1,22 @@
 //
 //  aboutTableViewCell.swift
-//  VoiceXporter
+//  ChatLoader
 //
 //  Created by Paul Whiten on 3/6/26.
+//
+//  Used for displaying fields/values or single label (a user action) in UITableViews
 //
 
 import UIKit
 
 class aboutTableViewCell: UITableViewCell {
     
+    //MARK: class variables
     var labelTitle: UILabel?
     var labelValue: UILabel?
     var labelAction: UILabel?
     
-    let spacer: CGFloat = 4
+    let spacer: CGFloat = 4         //standard spacing for between views
     var labelHeight: CGFloat = 21
     
     let fontLarge: UIFont = .systemFont(ofSize: 16, weight: .semibold)
@@ -53,6 +56,8 @@ class aboutTableViewCell: UITableViewCell {
     //MARK: class functions
     func setupCellViews(title: String?, value: String?, action: String?) {
      
+        self.backgroundColor = UIColor.secondarySystemGroupedBackground
+        
         let selectedView = UIView()
         selectedView.frame = self.contentView.frame
         selectedView.backgroundColor = Helper.app.colorPrimaryCellSelected
@@ -97,7 +102,7 @@ class aboutTableViewCell: UITableViewCell {
             ])
         } //if title != nil and value != nil
         else if action != nil {
-            //Get in touch; Pricvacy; Acknowledgements
+            //Get in touch; Privacy; Tell a friend; Acknowledgements
             
             labelAction = UILabel()
             labelAction?.backgroundColor = .clear
@@ -125,10 +130,10 @@ class aboutTableViewCell: UITableViewCell {
             
             NSLayoutConstraint.activate([
                 labelAction!.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-                //**Here**
+                labelAction!.heightAnchor.constraint(equalToConstant: labelHeight),
+                
                 labelAction!.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 3*spacer),
                 labelAction!.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -3*spacer),
-                labelAction!.heightAnchor.constraint(equalToConstant: labelHeight),
             ])
         }
     }

@@ -1,22 +1,25 @@
 //
 //  chatTableViewCell.swift
-//  VoiceXporter
+//  ChatLoader
 //
 //  Created by Paul Whiten on 1/6/26.
+//
+//  Used for displaying the data in a Chat
 //
 
 import UIKit
 
 class chatTableViewCell: UITableViewCell {
     
-    var imageMessage: UIImageView?
+    //MARK: class variables
+    var imageMessage: UIImageView?  //uses different SF Symbols dependig on Chat.senderCount
     var labelChatName: UILabel?
     var labelLoadDate: UILabel?
     var labelSenders: UILabel?
     var labelMessages: UILabel?
     var labelChatSize: UILabel?
     
-    let spacer: CGFloat = 4
+    let spacer: CGFloat = 4         //standard spacing for between views
     let labelHeight: CGFloat = 21
     let imageMessageHeight: CGFloat = 48
     
@@ -62,18 +65,35 @@ class chatTableViewCell: UITableViewCell {
     //MARK: class functions
     func setupCellViews(chat: Chat, numberMessages: String, directorySize: String) {
      
+        self.backgroundColor = UIColor.secondarySystemGroupedBackground
+        
         let selectedView = UIView()
         selectedView.frame = self.contentView.frame
         selectedView.backgroundColor = Helper.app.colorPrimaryCellSelected
         self.selectedBackgroundView = selectedView
         
-        let labelWidth1: CGFloat = (UIScreen.main.bounds.width - 8*spacer - imageMessageHeight) * 0.7   //spacers: edge to imageMessage; imageMessage to label; label to label; label to edge; +2 extra
-        let labelWidth2: CGFloat = (UIScreen.main.bounds.width - 8*spacer - imageMessageHeight) * 0.3
+        /*
+         Spacers:
+         edge to imageMessage = 2
+         imageMessage to labelChatName = 2
+         labelLoadDate to edge = 3
+         */
+        let labelWidthChatName: CGFloat = (UIScreen.main.bounds.width - 7*spacer - imageMessageHeight) * 0.7
+        let labelWidthLoadDate: CGFloat = (UIScreen.main.bounds.width - 7*spacer - imageMessageHeight) * 0.3
         
+        /*
+         Spacers:
+         edge to imageMessage = 2
+         imageMessage to labelSenders = 2
+         labelChatSize to edge = 3
+         */
+        let labelWidthMessages: CGFloat = (UIScreen.main.bounds.width - 7*spacer - imageMessageHeight) * 0.45
+        let labelWidthSenders_ChatSize: CGFloat = (UIScreen.main.bounds.width - 7*spacer - imageMessageHeight) * 0.275
         
         if chat.senderCount < 2 {
             imageMessage = UIImageView(image: UIImage(systemName: "bubble.left"))
-        } else {
+        }
+        else {
             imageMessage = UIImageView(image: UIImage(systemName: "bubble.left.and.text.bubble.right"))
         }
         
@@ -85,6 +105,8 @@ class chatTableViewCell: UITableViewCell {
         labelChatName?.backgroundColor = .clear
         labelChatName?.font = fontLarge
         labelChatName?.text = chat.chatName
+        labelChatName?.adjustsFontSizeToFitWidth = true
+        labelChatName?.minimumScaleFactor = 0.5
         
         labelLoadDate = UILabel()
         labelLoadDate?.backgroundColor = .clear
@@ -97,15 +119,22 @@ class chatTableViewCell: UITableViewCell {
         labelSenders?.backgroundColor = .clear
         labelSenders?.font = fontNormal
         labelSenders?.text = "Senders: \(String(chat.senderCount))"
+        labelSenders?.adjustsFontSizeToFitWidth = true
+        labelSenders?.minimumScaleFactor = 0.5
         
         labelMessages = UILabel()
         labelMessages?.backgroundColor = .clear
         labelMessages?.font = fontNormal
         labelMessages?.text = "Messages: \(numberMessages)"
+        labelMessages?.adjustsFontSizeToFitWidth = true
+        labelMessages?.minimumScaleFactor = 0.5
         
         labelChatSize = UILabel()
         labelChatSize?.backgroundColor = .clear
         labelChatSize?.font = fontNormal
+        labelChatSize?.textAlignment = .right
+        labelChatSize?.adjustsFontSizeToFitWidth = true
+        labelChatSize?.minimumScaleFactor = 0.5
         
         let dir = Helper.app.getChatDirURL(chatID: chat.chatID)
         let dirSize = Helper.app.sizeOfDirectory(at: dir)!
@@ -131,35 +160,37 @@ class chatTableViewCell: UITableViewCell {
             
             imageMessage!.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             imageMessage!.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 2*spacer),
-            imageMessage!.heightAnchor.constraint(equalToConstant: imageMessageHeight),
             imageMessage!.widthAnchor.constraint(equalToConstant: imageMessageHeight),
+            imageMessage!.heightAnchor.constraint(equalToConstant: imageMessageHeight),
             
-            labelChatName!.topAnchor.constraint(equalTo: contentView.topAnchor, constant: spacer),
+            labelChatName!.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 2*spacer),
             labelChatName!.leadingAnchor.constraint(equalTo: imageMessage!.trailingAnchor, constant: 2*spacer),
-            labelChatName!.widthAnchor.constraint(equalToConstant: labelWidth1),
+            labelChatName!.widthAnchor.constraint(equalToConstant: labelWidthChatName),
             labelChatName!.heightAnchor.constraint(equalToConstant: labelHeight),
             
-            labelLoadDate!.topAnchor.constraint(equalTo: contentView.topAnchor, constant: spacer),
+            labelLoadDate!.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 2*spacer),
             labelLoadDate!.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -3*spacer),
-            labelLoadDate!.widthAnchor.constraint(equalToConstant: labelWidth2),
+            labelLoadDate!.widthAnchor.constraint(equalToConstant: labelWidthLoadDate),
             labelLoadDate!.heightAnchor.constraint(equalToConstant: labelHeight),
             
-            labelSenders!.leadingAnchor.constraint(equalTo: imageMessage!.trailingAnchor, constant: 2*spacer),
-            labelSenders!.trailingAnchor.constraint(equalTo: labelMessages!.leadingAnchor, constant: -1*spacer),
-            labelSenders!.heightAnchor.constraint(equalToConstant: labelHeight),
+            labelSenders!.topAnchor.constraint(equalTo: labelChatName!.bottomAnchor, constant: spacer),
             labelSenders!.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -2*spacer),
+            labelSenders!.leadingAnchor.constraint(equalTo: imageMessage!.trailingAnchor, constant: 2*spacer),
+            labelSenders!.widthAnchor.constraint(equalToConstant: labelWidthSenders_ChatSize),
+            labelSenders!.heightAnchor.constraint(equalToConstant: labelHeight),
             
             labelMessages!.topAnchor.constraint(equalTo: labelChatName!.bottomAnchor, constant: spacer),
-            labelMessages!.leadingAnchor.constraint(equalTo: labelSenders!.trailingAnchor),
-            labelMessages!.widthAnchor.constraint(equalToConstant: labelWidth2+10*spacer),
-            labelMessages!.heightAnchor.constraint(equalToConstant: labelHeight),
             labelMessages!.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -2*spacer),
-            
+            labelMessages!.leadingAnchor.constraint(equalTo: labelSenders!.trailingAnchor),
+            labelMessages!.trailingAnchor.constraint(equalTo: labelChatSize!.leadingAnchor),
+            labelMessages!.widthAnchor.constraint(equalToConstant: labelWidthMessages),
+            labelMessages!.heightAnchor.constraint(equalToConstant: labelHeight),
+
             labelChatSize!.topAnchor.constraint(equalTo: labelChatName!.bottomAnchor, constant: spacer),
-            labelChatSize!.leadingAnchor.constraint(equalTo: labelMessages!.trailingAnchor, constant: spacer),
-            labelChatSize!.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -3*spacer),
-            labelChatSize!.heightAnchor.constraint(equalToConstant: labelHeight),
             labelChatSize!.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -2*spacer),
+            labelChatSize!.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -3*spacer),
+            labelChatSize!.widthAnchor.constraint(equalToConstant: labelWidthSenders_ChatSize),
+            labelChatSize!.heightAnchor.constraint(equalToConstant: labelHeight),
         ])
     }
     

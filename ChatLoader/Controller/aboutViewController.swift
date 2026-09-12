@@ -1,8 +1,10 @@
 //
 //  aboutViewController.swift
-//  VoiceXporter
+//  ChatLoader
 //
 //  Created by Paul Whiten on 25/5/26.
+//
+//  Shows details to the user about ChatLoader and contains various links
 //
 
 import CoreData
@@ -10,14 +12,12 @@ import UIKit
 import AVFoundation
 import MessageUI
 
-class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate, UITableViewDataSource, UITableViewDelegate {
+class aboutViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate {
     
+    //MARK: class variables
     var tableAbout = UITableView(frame: .zero, style: .insetGrouped)
     let cellReuseIdentifierAbout = "reuseIdentifier"                //aboutTableViewCell
     let cellReuseIdentifierPrivacy = "privacyCellReuseIdnetifier"   //privacyStatementCell
-    
-    let spacer: CGFloat = 4
-    let privacyRowHeight: CGFloat = 70  //default UILabel height = 21, so 3 and 1/3 times
     
     let sectionHeaders: [String] = ["Get in touch", "App info", "Privacy", "Acknowledgements"]
     
@@ -35,19 +35,20 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         [true],
         ]
     
-    let urlLinks: [String] = ["https://github.com/WPMedia/WPZipArchive"]
+    let urlLinks: [String] = ["https://github.com/WPMedia/WPZipArchive"]    //for "Acknowledgements"
     
     
     //core data
     var childContext = NSManagedObjectContext(concurrencyType: NSManagedObjectContextConcurrencyType.privateQueueConcurrencyType)
         
     
-    //MARK: view contorller lifecycle
+    //MARK: lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setContext()
         setTableView()
+        setnavigationBar()
     }
     
     
@@ -55,8 +56,8 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         super.viewWillAppear(animated)
         
         tableAbout.reloadData()
-        setnavigationBar()
     }
+    
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -65,6 +66,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
     }
     
     
+    //MARK: class functions
     func setTableView() {
         
         tableAbout.dataSource = self
@@ -93,7 +95,6 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.title = "About ChatLoader"
-//        self.navigationItem.largeTitleDisplayMode = .always
     }
     
     
@@ -107,7 +108,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         let versionNumber = Helper.app.getAppVersion()
         let x = UserDefaults.standard.integer(forKey: Helper.app.keyTotalChatsLoaded)
         
-        let mailBody:String = "</br></br></br>" + "v\(versionNumber)"
+        let mailBody: String = "</br></br></br>" + "v\(versionNumber)"
             + "\(productTier).\(x)"
             + "</br>\(Helper.app.getLocale())"
             + "</br>iOS " + UIDevice.current.systemVersion
@@ -130,12 +131,6 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
     }
     
     
-    //MARK: MFMailComposeViewControllerDelegate
-    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: (any Error)?) {
-        controller.dismiss(animated: true, completion: nil)
-    }
-    
-    
     //MARK: UITableViewDelegate
     func numberOfSections(in tableView: UITableView) -> Int {
         return tableContent.count
@@ -155,6 +150,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return UITableView.automaticDimension
     }
+    
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
@@ -179,9 +175,11 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
             
             if indexPath.row == 0 {
                 cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: Helper.app.getAppVersion(), action: nil)
-            } else if indexPath.row == 1 {
+            }
+            else if indexPath.row == 1 {
                 cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: "\(getTotalChats())", action: nil)
-            } else if indexPath.row == 2 {
+            }
+            else if indexPath.row == 2 {
                 cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: Helper.app.formatNumber(number: getTotalMessages())!, action: nil)
             }
         }
@@ -193,7 +191,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
             
             privacyStatementCell.setupCellViews(title: "ChatLoader's privacy statement",
                                                 value: "All chat data used by ChatLoader is stored locally on your device. You can confirm this by using the app offline.\n\nThe app *collects NO data* from your chats – no message content and no personally identifiable information either.\n\nThe exported WhatsApp chat is deleted after it is processed; and only the message content and relevant attachments are saved to the app. This data is stored within the app's private directories as dictated by Apple's app design guidelines.\n\nWhen you delete an imported chat or any other artefact from within the app, it is completely removed from your iPhone.\n\nYou can find out more in ChatLoader's privacy statement.",
-                                                action: "https//www.apple.com")
+                                                action: "https://pauldisrupts.github.io/chattools/privacystatement.html")
             
             privacyStatementCell.isUserInteractionEnabled = true
             
@@ -217,15 +215,15 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
                 //Get in touch
                 
                 if indexPath.row == 0 {
-                    self.sendMail(mailTitle: "Feedback on VoiceMerge")
+                    self.sendMail(mailTitle: "Feedback on ChatLoader")
                 }
                 else if indexPath.row == 1 {
-                    self.sendMail(mailTitle: "Report a bug with VoiceMerge")
+                    self.sendMail(mailTitle: "Report a bug with ChatLoader")
                 }
                 else if indexPath.row == 2 {
                     //tell a friend
                     
-                    let url:URL = URL(string: "https://github.com/PaulDisrupts/ChatLoader.git")!
+                    let url: URL = URL(string: "https://github.com/PaulDisrupts/ChatLoader.git")!
                     
                     let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                     
@@ -263,7 +261,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) { }
     
     
-    //MARK: CoreData
+    //MARK: Core Data
     func setContext() {
         
         childContext.parent = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -274,7 +272,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
     
     func getTotalChats() -> Int {
         
-        let fetchRequest:NSFetchRequest = Chat.fetchRequest()
+        let fetchRequest: NSFetchRequest = Chat.fetchRequest()
         
         do {
             let results = try childContext.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Chat]
@@ -292,7 +290,7 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
     
     func getTotalMessages() -> Int {
         
-        let fetchRequest:NSFetchRequest = Message.fetchRequest()
+        let fetchRequest: NSFetchRequest = Message.fetchRequest()
         
         do {
             let results = try childContext.fetch(fetchRequest as! NSFetchRequest<NSFetchRequestResult>) as! [Message]
@@ -305,6 +303,12 @@ class aboutViewController: UIViewController, MFMailComposeViewControllerDelegate
         }
         
         return 0
+    }
+    
+    
+    //MARK: MFMailComposeViewControllerDelegate
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: (any Error)?) {
+        controller.dismiss(animated: true, completion: nil)
     }
     
 }

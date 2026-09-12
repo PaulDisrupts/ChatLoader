@@ -14,7 +14,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        print("\(Helper.app.appDirectoryURL())")
+        print("ChatLoader app directory:\n\(Helper.app.appDirectoryURL())")
+        UserDefaults.standard.setValue(false, forKey: "_UIConstraintBasedLayoutLogUnsatisfiable")
         
         Helper.app.setIsLoading(isLoading: false)                               //reset isLoading variable every launch of app
         UserDefaults.standard.set(false, forKey: Helper.app.keyTutorialShown)   //only show tutorial once per instance of app
@@ -25,9 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             UserDefaults.standard.set(true, forKey: Helper.app.keyHasBeenLaunched)
             UserDefaults.standard.set(false, forKey: Helper.app.keyHasRated)
-            UserDefaults.standard.set(0, forKey: Helper.app.keyTotalChatsLoaded)           //Helper.app.getNextChatID() will increment, ie first chat loaded will start at 1
-            UserDefaults.standard.set("0.4", forKey: Helper.app.keyVersionNumber)
-            UserDefaults.standard.set("Free", forKey: Helper.app.keyInAppPurchase)          //Free; Paid
+            UserDefaults.standard.set(0, forKey: Helper.app.keyTotalChatsLoaded)    //Helper.app.getNextChatID() will increment, ie first chat loaded will start at 1
+            UserDefaults.standard.set("1.0", forKey: Helper.app.keyVersionNumber)
+            UserDefaults.standard.set("Free", forKey: Helper.app.keyInAppPurchase)  //Free; Paid
             
             UserDefaults.standard.synchronize()
             

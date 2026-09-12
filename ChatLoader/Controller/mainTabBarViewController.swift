@@ -1,8 +1,11 @@
 //
 //  mainTabBarViewController.swift
-//  VoiceXporter
+//  ChatLoader
 //
 //  Created by Paul Whiten on 19/7/26.
+//
+//  The root ViewController
+//  Handles NSNotification when an exported WhatsApp chat .zip file is exported to ChatLoader via UIActivityViewController/'Share'/"Copy to app"
 //
 
 import UIKit
@@ -10,13 +13,13 @@ import CoreData
 
 class mainTabBarViewController: UITabBarController {
     
-    
+    //MARK: lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         let chatsVC = chatsViewController()
-        chatsVC.loadViewIfNeeded()
-        let chatsVCNavVC = UINavigationController(rootViewController: chatsVC)  //force load of VC
+        chatsVC.loadViewIfNeeded()  //force load of VC
+        let chatsVCNavVC = UINavigationController(rootViewController: chatsVC)
         chatsVCNavVC.tabBarItem = UITabBarItem(title: "Chats", image: UIImage(systemName: "bubble.left.and.text.bubble.right"), tag: 0)
         
         let helpVC = tutorialViewController()
@@ -38,11 +41,12 @@ class mainTabBarViewController: UITabBarController {
     }
     
     
+    //MARK: class functions
     func setNotifications() {
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: Helper.app.notificationRawValue), object: self.view.window?.windowScene?.delegate, queue: OperationQueue.main) { notification in
 
-            // get the URL from the NSNotification
+            //get the URL from the NSNotification
             if let url = notification.userInfo?[Helper.app.copytoAppURL] as? URL {
                 
                 if !Helper.app.isLoading() {
@@ -50,12 +54,12 @@ class mainTabBarViewController: UITabBarController {
                         
                     //get current view controller and dismiss any presented view controllers
                     if let selectedVC = self.selectedViewController {
-                        print("mainTabBarViewController.selectedVC: \(type(of: selectedVC))")
+//                        print("mainTabBarViewController.selectedVC: \(type(of: selectedVC))")
                         
                         if let navVC = selectedVC as? UINavigationController {
                             
                             let visibleVC = navVC.visibleViewController
-                            print("mainTabBarViewController.visibleVC: \(type(of: visibleVC!))")
+//                            print("mainTabBarViewController.visibleVC: \(type(of: visibleVC!))")
                             
                             visibleVC?.dismiss(animated: false)
                             navVC.popToRootViewController(animated: false)
@@ -75,7 +79,7 @@ class mainTabBarViewController: UITabBarController {
                             
                             //allow any VC transition animations to complete
                             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Helper.app.animationTime) {
-                                chatsVC.loadFileFromURL(fileURL: url)   //this is the *only* place to trigger chatsViewController.loadFileFromURL(fileURL:URL)
+                                chatsVC.loadFileFromURL(fileURL: url)   //this is the *only* place to trigger chatsViewController.loadFileFromURL(fileURL: URL)
                             }
                         } //if let chatsVC = navVC.viewControllers.first as? chatsViewController
                     } //if let navVC = self.selectedViewController as? UINavigationController

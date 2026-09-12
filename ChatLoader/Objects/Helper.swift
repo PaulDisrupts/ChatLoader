@@ -4,6 +4,9 @@
 //
 //  Created by Paul Michael Whiten on 11/2/21.
 //
+//  "Helper" containing common variables, functions, extensions, protocols
+//  Called using lazy initialisation, ie. Helper.app.X
+//
 
 import Foundation
 import UIKit
@@ -16,43 +19,42 @@ class Helper {
     }()
     
     
-    //MARK: variables
-    let animationTime: Double = 0.25
-    var printToggle: Bool = false
+    //MARK: class variables
+    let animationTime: Double = 0.25    //standardised time for animations to complete across the app
+    var printToggle: Bool = false       //toggle print to debug console in this class
     
-    let colorPrimary = UIColor(red: 165.0/255, green: 42.0/255, blue: 213.0/255, alpha: 1) // hex: #a52ad5
-    let colorPrimaryCellSelected = UIColor(red: 213.0/255, green: 42.0/255, blue: 176.0/255, alpha: 0.8) // hex: #d52ab0
+    //app colours
+    let colorPrimary = UIColor(red: 165.0/255, green: 42.0/255, blue: 213.0/255, alpha: 1) //hex: #a52ad5
+    let colorPrimaryCellSelected = UIColor(red: 213.0/255, green: 42.0/255, blue: 176.0/255, alpha: 0.8) //hex: #d52ab0
     
-    let colorSecondary = UIColor(red: 90.0/255, green: 213.0/255, blue: 42.0/255, alpha: 1) // hex: #5ad52a
+    let colorSecondary = UIColor(red: 90.0/255, green: 213.0/255, blue: 42.0/255, alpha: 1) //hex: #5ad52a
     let colorTertiary = UIColor(red: 213.0/255, green: 139.0/255, blue: 42.0/255, alpha: 1) //hex: #d58b2a
     
-    let notificationRawValue = "copyToAppFile"  //used for notification when ChatLoader launched/opened from background via
-    let copytoAppURL: String = "copytoAppURL"   //identifier for the URL of imported .zip filesUIActivityViewController/'share'/"Copy to app" from an exported WhatsApp chat .zip file
-    let whatsappZipFilePrefix = "WhatsApp Chat - "
-    let chatStatusUpdate = "chat_status_update"  //used when cannot distinguish if a message is from a sender or from 'WhatsApp system'; assume that it is a 'WhatsApp system' status update
+    //for processing WhatsApp chat files
+    let notificationRawValue = "copyToAppFile"      //used for notification when ChatLoader launched/opened from background via
+    let copytoAppURL: String = "copytoAppURL"       //identifier for the URL of imported .zip filesUIActivityViewController/'share'/"Copy to app" from an exported WhatsApp chat .zip file
+    let whatsappZipFilePrefix = "WhatsApp Chat - "  //standard prefix format of exported WhatsApp files (followed by the chat name)
+    let chatStatusUpdate = "chat_status_update"     //used when cannot distinguish if a message is from a sender or from 'WhatsApp system'; assume that it is a 'WhatsApp system' status update
     
     //directories
     let appDirectory: String = "ChatLoaderPrivateDocuments" //../Library/ChatLoaderPrivateDocuments/
     let importedChatsDirectory: String = "importedChats"    //../Library/ChatLoaderPrivateDocuments/importedChats/
-    let tempDirectory: String = "tempDir"     //../Library/ChatLoaderPrivateDocuments/importedChats/tempDir/
+    let tempDirectory: String = "tempDir"                   //../Library/ChatLoaderPrivateDocuments/importedChats/tempDir/
     
     //UserDefaults.standard keys
-    let keyHasBeenLaunched: String = "hasBeenLaunched"      //first time launch to set initial persistent variables, set in AppDelegate
-    let keyVersionNumber: String = "versionNumber"          //incremented on version updates, set in AppDelegate
-    let keyTotalChatsLoaded: String = "totalChatsLoaded"    //counter for all-time number of chats loaded; cannot use current number of chats in case of deleted chats, set in AppDelegate, incremented in fileProcessor
-    
+    let keyHasBeenLaunched: String = "hasBeenLaunched"      //Bool - first time launch to set initial persistent variables, set in AppDelegate
+    let keyVersionNumber: String = "versionNumber"          //Int - incremented on version updates, set in AppDelegate
+    let keyTotalChatsLoaded: String = "totalChatsLoaded"    //Int - counter for all-time number of chats loaded; cannot use current number of chats in case of deleted chats; set as 0 in AppDelegate so first Chat loaded will be assigned as 1 from Helper.getNextChatID(); incremented in fileProcessor
     let keyInAppPurchase: String = "inAppPurchase"          //"Paid" or "Free"
-    let keyHasRated: String = "hasRated"
-    
-    let keyTutorialShown: String = "tutorialShown"          //tutorial shown once per app instance
-    let keyIsLoading: String = "isLoading"                  //global variable to track if WhatsApp chat is being processed
-    
+    let keyHasRated: String = "hasRated"                    //Bool
+    let keyTutorialShown: String = "tutorialShown"          //Bool - tutorial shown once per app instance
+    let keyIsLoading: String = "isLoading"                  //Bool - global variable to track if WhatsApp chat is being processed
     
     //fixed variables, my be changed in subsequent versions
-    let freeMessagesToMerge: Int = 4
-    let contactEmail: String = "app@gmail.com"
+    let appVersion: String = "1.0"
+    let contactEmail: String = "chattools.app@gmail.com"
     let upgradeProductIdentifier: String = "paid01"
-    let noOutgoingSenderSring: String = "_no outgoing sender_"
+    let noOutgoingSenderSring: String = "_no outgoing sender_"  //used when no outgoing sender is set in a chat, ie  Message.outgoing = 0 for all messages
     
     
     //attachment types dictionary
@@ -107,13 +109,14 @@ class Helper {
         
         if inputDate.count == 10 {
             return inputDate.replacingOccurrences(of: "/", with: "-")
-        } else {
+        }
+        else {
             return nil
         }
     }
     
     
-    func convertDateAsString(_ inputDate:String) -> String {
+    func convertDateAsString(inputDate: String) -> String {
         
         let inputDateFormatter = DateFormatter()
         inputDateFormatter.dateFormat = "yyyy/MM/dd"
@@ -197,7 +200,7 @@ class Helper {
         printToggle = false
         
         if printToggle {
-            print("\(tempURL)")
+            print("Helper.testPrintURLs(): \(tempURL)")
         }
     }
     
@@ -207,7 +210,7 @@ class Helper {
         let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         
         if printToggle {
-            print("func documentsDirectoryURL() -> URL {\n\t\(url.path)")
+            print("Helper.documentsDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -223,7 +226,7 @@ class Helper {
         let url = FileManager.default.urls(for: FileManager.SearchPathDirectory.libraryDirectory, in: .userDomainMask).first!
         
         if printToggle {
-            print("func libraryDirectoryURL() -> URL {\n\t\(url.path)")
+            print("Helper.libraryDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -235,7 +238,7 @@ class Helper {
         let url = FileManager.default.temporaryDirectory
         
         if printToggle {
-            print("func defaultTemporaryDirectoryURL() -> URL {\n\t\(url.path)")
+            print("Helper.defaultTemporaryDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -244,10 +247,10 @@ class Helper {
     
     func inboxDirectoryURL() -> URL {
         
-        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Inbox")// (AppDirectories.Inbox.rawValue) // "Inbox")
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Inbox")//(AppDirectories.Inbox.rawValue)
         
         if printToggle {
-            print("func inboxDirectoryURL() -> URL {\n\t\(url.path)")
+            print("Helper.inboxDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -261,7 +264,7 @@ class Helper {
         
         
         if printToggle {
-            print("func appDirectoryURL() -> URL {\n\t\(url.path)")
+            print("Helper.appDirectoryURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -274,7 +277,7 @@ class Helper {
         let url = appDirectoryURL().appendingPathComponent(importedChatsDirectory)
         
         if printToggle {
-            print("func importedChatsURL() -> URL {\n\t\(url.path)")
+            print("Helper.importedChatsURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -287,7 +290,7 @@ class Helper {
         let url = importedChatsURL().appendingPathComponent(tempDirectory)
         
         if printToggle {
-            print("func tempDirURL() -> URL {\n\t\(url.path)")
+            print("Helper.tempDirURL() -> URL {\n\t\(url.path)")
         }
         
         return url
@@ -302,7 +305,7 @@ class Helper {
     
     func getImportedFileURLFromInbox() -> URL? {
         
-        var url:URL?
+        var url: URL?
         
         let fileManager = FileManager()
         
@@ -311,10 +314,10 @@ class Helper {
             
             for fn in fileNames! {
                 
-                print("filename: \(fn)")
+                print("Helper.getImportedFileURLFromInbox() filename: \(fn)")
                 
                 if fn.range(of: ".zip") != nil {
-                    print(".zip file found!")
+                    print("Helper.getImportedFileURLFromInbox() .zip file found!")
                     url = inboxDirectoryURL().appendingPathComponent(fn)
                 }
             }
@@ -337,10 +340,10 @@ class Helper {
             
             for fn in fileNames! {
                 
-                print("filename: \(fn)")
+                print("Helper.printFilesInbox() filename: \(fn)")
                 
                 if fn.range(of: ".zip") != nil {
-                    print("found!")
+                    print("Helper.printFilesInbox() .zip found!")
                 }
             }
             
@@ -351,12 +354,10 @@ class Helper {
     }
     
     
-    func formatChatIDToDirectoryName(chatID:Int) -> String {
+    func formatChatIDToDirectoryName(chatID: Int) -> String {
         //create a 4 digit fileID name
         
         let tempStr = String(String("000" + String(chatID)).suffix(4))
-        
-        print("Helper:formatChatIDToDirectoryName(chatID:Int) -> \(tempStr)")
         
         return tempStr
     }
@@ -388,7 +389,8 @@ class Helper {
                 // Prefer allocated size on disk; fall back to literal file size
                 if let allocatedSize = resourceValues.totalFileAllocatedSize {
                     totalSize += Int64(allocatedSize)
-                } else if let fileSize = resourceValues.fileSize {
+                }
+                else if let fileSize = resourceValues.fileSize {
                     totalSize += Int64(fileSize)
                 }
             }
@@ -404,7 +406,7 @@ class Helper {
     }
     
     
-    //MARK: misc functions
+    //MARK: UserDefaults functions
     func isLoading() -> Bool {
         return UserDefaults.standard.bool(forKey: self.keyIsLoading)
     }
@@ -420,10 +422,12 @@ class Helper {
         return UserDefaults.standard.integer(forKey: self.keyTotalChatsLoaded) + 1
     }
     
+    
     func incrementChatID() {
         UserDefaults.standard.set(self.getNextChatID(), forKey: self.keyTotalChatsLoaded)
         UserDefaults.standard.synchronize()
     }
+    
     
     func showTutorial(numberOfChats: Int) -> Bool {
         
@@ -462,7 +466,8 @@ class Helper {
 
 //MARK: extensions
 extension URL {
-    /* usage:
+    /*
+     usage:
         let fileUrl: URL
         print("file size = \(fileUrl.fileSize), \(fileUrl.fileSizeString)")
      */
@@ -497,24 +502,24 @@ extension URL {
 
 extension UIViewController {
     
-    func topMostViewController() -> UIViewController {
+    func extension_topMostViewController() -> UIViewController {
         
         // If it's a navigation controller, look at the visible one
         if let navigation = self as? UINavigationController {
-            return navigation.visibleViewController?.topMostViewController() ?? navigation
+            return navigation.visibleViewController?.extension_topMostViewController() ?? navigation
         }
         
         // If it's a tab bar controller, look at the selected one
         if let tab = self as? UITabBarController {
             if let selectedTab = tab.selectedViewController {
-                return selectedTab.topMostViewController()
+                return selectedTab.extension_topMostViewController()
             }
-            return tab.topMostViewController()
+            return tab.extension_topMostViewController()
         }
         
         // If it's presenting another view controller, go deeper
         if let presented = self.presentedViewController {
-            return presented.topMostViewController()
+            return presented.extension_topMostViewController()
         }
         
         // Base case: this is the top-most controller
@@ -522,7 +527,7 @@ extension UIViewController {
     }
     
     
-    func getTabBarController() -> UITabBarController? {
+    func extension_getTabBarController() -> UITabBarController? {
         //return the top most controller, ie UITabBarController
         
         if let navVC = self.parent as? UINavigationController {
@@ -539,9 +544,9 @@ extension UIViewController {
     }
     
     
-    func requestRating() {
+    func extension_requestRating() {
         
-        if !UserDefaults.standard.bool(forKey: Helper.app.keyHasRated) {
+        if Helper.app.canRequestRating() {
             
             // Find a suitable UIWindowScene
             let sceneFromView = self.view.window?.windowScene
@@ -557,7 +562,8 @@ extension UIViewController {
             if #available(iOS 18.0, *) {
                 // StoreKit 2 preferred API on iOS 18+
                 AppStore.requestReview(in: windowScene)
-            } else {
+            }
+            else {
                 // Scene-based legacy StoreKit 1 API on iOS 14–17
                 SKStoreReviewController.requestReview(in: windowScene)
             }
@@ -570,16 +576,29 @@ extension UIViewController {
 
 
 //MARK: protocols
-    protocol protocolFileProcessor {
-        func processingStarted()
-        func updateProgress(percentComplete:Int)
-        func processingError(errorMessage: String)
-        func processingSaving()
-        func processingComplete()
-    }
+//notify presenting ViewController of status changes when loading a WhatsApp chat .zip file
+protocol protocolFileProcessor {
+    
+    func protocolFileProcessor_start()
+    
+    func protocolFileProcessor_update(percentComplete: Int)
+    
+    func protocolFileProcessor_error(errorMessage: String)
+    
+    func protocolFileProcessor_saving()
+    
+    func protocolFileProcessor_complete()
+}
 
 
-    protocol protocolDataSelected {
-        func dismissWithChanges()
-        func dismissNoChanges()
-    }
+//notify presenting ViewController of any data changes (to the managed object context)
+protocol protocolDataChanged {
+    
+    func protocolDataChanged_noChanges()
+    
+    func protocolDataChanged_chatOutgoingSenderChanged()
+    
+    func protocolDataChanged_chatLoaded()
+    
+    func protocolDataChanged_error(errorMessage: String)
+}
