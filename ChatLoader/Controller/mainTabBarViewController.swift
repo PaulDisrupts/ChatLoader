@@ -31,7 +31,10 @@ class mainTabBarViewController: UITabBarController {
         aboutVCNavVC.tabBarItem = UITabBarItem(title: "About", image: UIImage(systemName: "info.circle"), tag: 2)
         
         self.tabBar.tintColor = Helper.app.colorPrimary
-        self.viewControllers = [chatsVCNavVC, helpVCNavVC, aboutVCNavVC]
+        
+        self.viewControllers = [chatsVCNavVC,
+                                helpVCNavVC,
+                                aboutVCNavVC]
         
         //set starting VC
         self.selectedIndex = chatsVC.startingVC()
@@ -50,7 +53,7 @@ class mainTabBarViewController: UITabBarController {
             if let url = notification.userInfo?[Helper.app.copytoAppURL] as? URL {
                 
                 if !Helper.app.isLoading() {
-                    //if a previous file is *not* currently being loaded
+                    //a file is *not* currently being loaded
                         
                     //get current view controller and dismiss any presented view controllers
                     if let selectedVC = self.selectedViewController {
@@ -92,7 +95,7 @@ class mainTabBarViewController: UITabBarController {
                     
                     do {
                         try fileManager.removeItem(at: url)
-                        print("mainTabBarViewController.setNotifications()_NotificationCenter.default.addObserver: Helper.app.isLoading() == true: file deleted")
+                        print("mainTabBarViewController.setNotifications()_NotificationCenter.default.addObserver: Helper.app.isLoading() == true:\nfile deleted: \(url)")
                         
                     }
                     catch let error as NSError {

@@ -65,8 +65,6 @@ class chatTableViewCell: UITableViewCell {
     //MARK: class functions
     func setupCellViews(chat: Chat, numberMessages: String, directorySize: String) {
      
-        self.backgroundColor = UIColor.secondarySystemGroupedBackground
-        
         let selectedView = UIView()
         selectedView.frame = self.contentView.frame
         selectedView.backgroundColor = Helper.app.colorPrimaryCellSelected

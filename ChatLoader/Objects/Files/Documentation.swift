@@ -644,3 +644,15 @@
  Message - for storing the individual messages in a WhatsApp chat; Many-to-1 with Chat
  
  */
+
+/*
+ ChatLoader user "happy path"
+ ****************************
+    
+ 1) Load chat via UIActivityViewController/'share'/"Copy to app" from an exported Whatsapp chat .zip file
+ 2) Set outgoing sender
+ 3) View chat stats, close chat stats
+ 4) Long press chat, select "Set outgoing sender", set outgoing sender
+ 5) View chat stats, close chat stats
+
+ */

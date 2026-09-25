@@ -1,5 +1,5 @@
 //
-//  textFieldTableViewCell.swift
+//  textViewTableViewCell.swift
 //  ChatLoader
 //
 //  Created by Paul Whiten on 7/9/26.
@@ -9,7 +9,7 @@
 
 import UIKit
 
-class textFieldTableViewCell: aboutTableViewCell {
+class textViewTableViewCell: aboutTableViewCell {
  
     //MARK: class variables
     var textView: UITextView?
@@ -49,6 +49,11 @@ class textFieldTableViewCell: aboutTableViewCell {
             if let url = URL(string: url) {
                 attributedString.addAttribute(.link, value: url, range: linkRange)
             }
+            
+            textView.linkTextAttributes = [
+                .foregroundColor: Helper.app.colorPrimary,
+                .underlineStyle: NSUnderlineStyle.single.rawValue // Optional: keeps the underline
+            ]
             
             textView.attributedText = attributedString
             textView.font = fontNormal

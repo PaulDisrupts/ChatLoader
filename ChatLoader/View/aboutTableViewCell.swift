@@ -56,8 +56,6 @@ class aboutTableViewCell: UITableViewCell {
     //MARK: class functions
     func setupCellViews(title: String?, value: String?, action: String?) {
      
-        self.backgroundColor = UIColor.secondarySystemGroupedBackground
-        
         let selectedView = UIView()
         selectedView.frame = self.contentView.frame
         selectedView.backgroundColor = Helper.app.colorPrimaryCellSelected

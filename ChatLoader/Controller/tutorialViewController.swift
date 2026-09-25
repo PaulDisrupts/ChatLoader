@@ -27,8 +27,6 @@ class tutorialViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.view.backgroundColor = UIColor.systemGroupedBackground
-        self.navigationController?.navigationBar.backgroundColor = .clear
         self.navigationItem.title  = "How to export chats from WhatsApp"
         
         playerQueue = AVQueuePlayer(playerItem: playerItem)

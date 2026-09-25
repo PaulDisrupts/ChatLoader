@@ -28,8 +28,13 @@
 		9CD1E59A25D581590012A02C /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD1E59925D581590012A02C /* Helper.swift */; };
 		AF1A888D2F82156F00B43B11 /* loadingAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF1A888C2F82156F00B43B11 /* loadingAlertController.swift */; };
 		AF3538BA3047C82D00B64FEE /* Documentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF3538B93047C82D00B64FEE /* Documentation.swift */; };
+		AF4BC5CE30656B150051D5E9 /* modalPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4BC5CD30656B150051D5E9 /* modalPageViewController.swift */; };
+		AF4BC5CF30656B150051D5E9 /* appDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4BC5CC30656B150051D5E9 /* appDetailsViewController.swift */; };
+		AF4BC5D130677EFC0051D5E9 /* ChatPDF logo 180x180.png in Resources */ = {isa = PBXBuildFile; fileRef = AF4BC5D030677EFC0051D5E9 /* ChatPDF logo 180x180.png */; };
+		AF4BC5D430677F540051D5E9 /* ChatShots 180x180_Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = AF4BC5D330677F540051D5E9 /* ChatShots 180x180_Icon.png */; };
+		AF4BC5D630677F810051D5E9 /* VoiceMerge logo 180.png in Resources */ = {isa = PBXBuildFile; fileRef = AF4BC5D530677F810051D5E9 /* VoiceMerge logo 180.png */; };
 		AF4EF8D42FB2CB4F005EBE7A /* ChatLoader_logo_1024.png in Resources */ = {isa = PBXBuildFile; fileRef = AF4EF8D32FB2CB4F005EBE7A /* ChatLoader_logo_1024.png */; };
-		AF7ED84A304EEF1700918690 /* textFieldTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7ED849304EEF1700918690 /* textFieldTableViewCell.swift */; };
+		AF7ED84A304EEF1700918690 /* textViewTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7ED849304EEF1700918690 /* textViewTableViewCell.swift */; };
 		AF7ED84C304EFADF00918690 /* modalTableViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7ED84B304EFADF00918690 /* modalTableViewViewController.swift */; };
 		AF876D6A30464E280056FE91 /* mainTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF876D6930464E280056FE91 /* mainTabBarViewController.swift */; };
 		AF876D6D30464E3E0056FE91 /* chatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF876D6C30464E3E0056FE91 /* chatsViewController.swift */; };
@@ -37,6 +42,8 @@
 		AF876D7030464E470056FE91 /* tutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF876D6F30464E470056FE91 /* tutorialViewController.swift */; };
 		AF876D7F3046538D0056FE91 /* chatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF876D7E3046538D0056FE91 /* chatTableViewCell.swift */; };
 		AF876D81304653960056FE91 /* aboutTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF876D80304653960056FE91 /* aboutTableViewCell.swift */; };
+		AFA4CDAB306BF50B00CD92D8 /* storeKit_ChatLoader.storekit in Resources */ = {isa = PBXBuildFile; fileRef = AFA4CDAA306BF50B00CD92D8 /* storeKit_ChatLoader.storekit */; };
+		AFA4CDAD306BF55500CD92D8 /* inAppPurchaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA4CDAC306BF55500CD92D8 /* inAppPurchaseViewController.swift */; };
 		AFBF7DB22FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AFBF7DB12FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 */; };
 		AFDA2E5E304B96280038F4F3 /* selectSenderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDA2E5D304B96280038F4F3 /* selectSenderViewController.swift */; };
 /* End PBXBuildFile section */
@@ -94,8 +101,13 @@
 		9CD1E59925D581590012A02C /* Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
 		AF1A888C2F82156F00B43B11 /* loadingAlertController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = loadingAlertController.swift; sourceTree = "<group>"; };
 		AF3538B93047C82D00B64FEE /* Documentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Documentation.swift; sourceTree = "<group>"; };
+		AF4BC5CC30656B150051D5E9 /* appDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appDetailsViewController.swift; sourceTree = "<group>"; };
+		AF4BC5CD30656B150051D5E9 /* modalPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modalPageViewController.swift; sourceTree = "<group>"; };
+		AF4BC5D030677EFC0051D5E9 /* ChatPDF logo 180x180.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ChatPDF logo 180x180.png"; sourceTree = "<group>"; };
+		AF4BC5D330677F540051D5E9 /* ChatShots 180x180_Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ChatShots 180x180_Icon.png"; sourceTree = "<group>"; };
+		AF4BC5D530677F810051D5E9 /* VoiceMerge logo 180.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "VoiceMerge logo 180.png"; sourceTree = "<group>"; };
 		AF4EF8D32FB2CB4F005EBE7A /* ChatLoader_logo_1024.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ChatLoader_logo_1024.png; sourceTree = "<group>"; };
-		AF7ED849304EEF1700918690 /* textFieldTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = textFieldTableViewCell.swift; sourceTree = "<group>"; };
+		AF7ED849304EEF1700918690 /* textViewTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = textViewTableViewCell.swift; sourceTree = "<group>"; };
 		AF7ED84B304EFADF00918690 /* modalTableViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = modalTableViewViewController.swift; sourceTree = "<group>"; };
 		AF876D6930464E280056FE91 /* mainTabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mainTabBarViewController.swift; sourceTree = "<group>"; };
 		AF876D6B30464E3E0056FE91 /* aboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = aboutViewController.swift; sourceTree = "<group>"; };
@@ -103,6 +115,8 @@
 		AF876D6F30464E470056FE91 /* tutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tutorialViewController.swift; sourceTree = "<group>"; };
 		AF876D7E3046538D0056FE91 /* chatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = chatTableViewCell.swift; sourceTree = "<group>"; };
 		AF876D80304653960056FE91 /* aboutTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = aboutTableViewCell.swift; sourceTree = "<group>"; };
+		AFA4CDAA306BF50B00CD92D8 /* storeKit_ChatLoader.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = storeKit_ChatLoader.storekit; sourceTree = "<group>"; };
+		AFA4CDAC306BF55500CD92D8 /* inAppPurchaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = inAppPurchaseViewController.swift; sourceTree = "<group>"; };
 		AFBF7DB12FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ChatLoader_export tutorial.mp4"; sourceTree = "<group>"; };
 		AFDA2E5D304B96280038F4F3 /* selectSenderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = selectSenderViewController.swift; path = "ChatLoader/Controller/Alert VCs/selectSenderViewController.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -259,6 +273,17 @@
 			path = Objects;
 			sourceTree = "<group>";
 		};
+		AF4BC5D230677F020051D5E9 /* App logos_screenshots */ = {
+			isa = PBXGroup;
+			children = (
+				AF4EF8D32FB2CB4F005EBE7A /* ChatLoader_logo_1024.png */,
+				AF4BC5D330677F540051D5E9 /* ChatShots 180x180_Icon.png */,
+				AF4BC5D030677EFC0051D5E9 /* ChatPDF logo 180x180.png */,
+				AF4BC5D530677F810051D5E9 /* VoiceMerge logo 180.png */,
+			);
+			path = "App logos_screenshots";
+			sourceTree = "<group>";
+		};
 		AF876D7130464E710056FE91 /* Alert VCs */ = {
 			isa = PBXGroup;
 			children = (
@@ -272,6 +297,9 @@
 			children = (
 				AFDA2E5D304B96280038F4F3 /* selectSenderViewController.swift */,
 				AF7ED84B304EFADF00918690 /* modalTableViewViewController.swift */,
+				AF4BC5CD30656B150051D5E9 /* modalPageViewController.swift */,
+				AF4BC5CC30656B150051D5E9 /* appDetailsViewController.swift */,
+				AFA4CDAC306BF55500CD92D8 /* inAppPurchaseViewController.swift */,
 			);
 			path = "Modal VCs";
 			sourceTree = "<group>";
@@ -281,7 +309,7 @@
 			children = (
 				AF876D7E3046538D0056FE91 /* chatTableViewCell.swift */,
 				AF876D80304653960056FE91 /* aboutTableViewCell.swift */,
-				AF7ED849304EEF1700918690 /* textFieldTableViewCell.swift */,
+				AF7ED849304EEF1700918690 /* textViewTableViewCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -289,9 +317,10 @@
 		AFBF7DB02FA1D81000CD1F8C /* Files */ = {
 			isa = PBXGroup;
 			children = (
+				AF4BC5D230677F020051D5E9 /* App logos_screenshots */,
 				AF3538B93047C82D00B64FEE /* Documentation.swift */,
-				AF4EF8D32FB2CB4F005EBE7A /* ChatLoader_logo_1024.png */,
 				AFBF7DB12FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 */,
+				AFA4CDAA306BF50B00CD92D8 /* storeKit_ChatLoader.storekit */,
 			);
 			path = Files;
 			sourceTree = "<group>";
@@ -360,7 +389,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1240;
-				LastUpgradeCheck = 2610;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					9CD1E55E25D57F3A0012A02C = {
 						CreatedOnToolsVersion = 12.4;
@@ -402,9 +431,13 @@
 			files = (
 				AF4EF8D42FB2CB4F005EBE7A /* ChatLoader_logo_1024.png in Resources */,
 				9CD1E57225D57F3C0012A02C /* LaunchScreen.storyboard in Resources */,
+				AF4BC5D630677F810051D5E9 /* VoiceMerge logo 180.png in Resources */,
+				AF4BC5D130677EFC0051D5E9 /* ChatPDF logo 180x180.png in Resources */,
+				AF4BC5D430677F540051D5E9 /* ChatShots 180x180_Icon.png in Resources */,
 				9CD1E56F25D57F3C0012A02C /* Assets.xcassets in Resources */,
 				9C29D3302691EC100058EF3B /* README.md in Resources */,
 				AFBF7DB22FA1D81B00CD1F8C /* ChatLoader_export tutorial.mp4 in Resources */,
+				AFA4CDAB306BF50B00CD92D8 /* storeKit_ChatLoader.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +472,7 @@
 				9C29D32B2688BE290058EF3B /* Message+CoreDataClass.swift in Sources */,
 				9CC4D00025D6BE4100390D79 /* unzip.c in Sources */,
 				9CD1E56325D57F3A0012A02C /* AppDelegate.swift in Sources */,
+				AFA4CDAD306BF55500CD92D8 /* inAppPurchaseViewController.swift in Sources */,
 				9C29D32C2688BE290058EF3B /* Message+CoreDataProperties.swift in Sources */,
 				AF876D6D30464E3E0056FE91 /* chatsViewController.swift in Sources */,
 				AF7ED84C304EFADF00918690 /* modalTableViewViewController.swift in Sources */,
@@ -447,10 +481,12 @@
 				9CD1E59A25D581590012A02C /* Helper.swift in Sources */,
 				AF876D6A30464E280056FE91 /* mainTabBarViewController.swift in Sources */,
 				9CD1E56D25D57F3A0012A02C /* ChatLoader.xcdatamodeld in Sources */,
-				AF7ED84A304EEF1700918690 /* textFieldTableViewCell.swift in Sources */,
+				AF7ED84A304EEF1700918690 /* textViewTableViewCell.swift in Sources */,
 				AF876D81304653960056FE91 /* aboutTableViewCell.swift in Sources */,
 				9CC4D00225D6BE4100390D79 /* ioapi.c in Sources */,
 				9C29D32D2688BE290058EF3B /* Chat+CoreDataClass.swift in Sources */,
+				AF4BC5CE30656B150051D5E9 /* modalPageViewController.swift in Sources */,
+				AF4BC5CF30656B150051D5E9 /* appDetailsViewController.swift in Sources */,
 				9C29D32E2688BE290058EF3B /* Chat+CoreDataProperties.swift in Sources */,
 				9CD1E56525D57F3A0012A02C /* SceneDelegate.swift in Sources */,
 				9CC4CFFF25D6BE4100390D79 /* WPZipArchive.m in Sources */,
@@ -630,11 +666,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = ChatLoader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.9;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pmw.ChatLoader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -655,11 +692,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = ChatLoader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.9;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pmw.ChatLoader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -678,7 +716,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = ChatLoaderTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -698,7 +736,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = ChatLoaderTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -717,6 +755,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = ChatLoaderUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -735,6 +774,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = ChatLoaderUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

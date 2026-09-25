@@ -19,18 +19,27 @@ class aboutViewController: UIViewController, UITableViewDataSource, UITableViewD
     let cellReuseIdentifierAbout = "reuseIdentifier"                //aboutTableViewCell
     let cellReuseIdentifierPrivacy = "privacyCellReuseIdnetifier"   //privacyStatementCell
     
-    let sectionHeaders: [String] = ["Get in touch", "App info", "Privacy", "Acknowledgements"]
+    let sectionHeaders: [String] = ["ChatTools apps",
+                                    "Get in touch",
+                                    "App info",
+                                    "Privacy",
+                                    "Limitations with exported chats",
+                                    "Acknowledgements"]
     
     let tableContent: [[String]] = [
+        ["Similar apps you might like"],
         ["Feedback", "Report a bug", "Tell a friend about ChatLoader"],
         ["ChatLoader version:", "Chats loaded:", "Total messages loaded:"],
-        ["Privacy statement --> use textFieldTableViewCell"],
+        ["Privacy statement --> use textViewTableViewCell"],
+        ["Limitations --> use textViewTableViewCell"],
         ["WPZipArchive"]
         ]
     
     let tableEnabledRows: [[Bool]] = [
+        [true],
         [true, true, true],
         [false, false, false, false],
+        [true],
         [true],
         [true],
         ]
@@ -72,7 +81,7 @@ class aboutViewController: UIViewController, UITableViewDataSource, UITableViewD
         tableAbout.dataSource = self
         tableAbout.delegate = self
         tableAbout.register(aboutTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifierAbout)
-        tableAbout.register(textFieldTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifierPrivacy)
+        tableAbout.register(textViewTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifierPrivacy)
         
         tableAbout.isScrollEnabled = true
         
@@ -164,13 +173,17 @@ class aboutViewController: UIViewController, UITableViewDataSource, UITableViewD
         
         cell.isUserInteractionEnabled = tableEnabledRows[indexPath.section][indexPath.row]
         
-        
         if indexPath.section == 0 {
-            //Get in touch
+            //Similar apps you might like
             
             cell.setupCellViews(title: nil, value: nil, action: tableContent[indexPath.section][indexPath.row])
         }
         else if indexPath.section == 1 {
+            //Get in touch
+            
+            cell.setupCellViews(title: nil, value: nil, action: tableContent[indexPath.section][indexPath.row])
+        }
+        else if indexPath.section == 2 {
             //App info
             
             if indexPath.row == 0 {
@@ -183,10 +196,10 @@ class aboutViewController: UIViewController, UITableViewDataSource, UITableViewD
                 cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: Helper.app.formatNumber(number: getTotalMessages())!, action: nil)
             }
         }
-        else if indexPath.section == 2 {
+        else if indexPath.section == 3 {
             //Privacy
             
-            guard let privacyStatementCell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifierPrivacy, for: indexPath) as? textFieldTableViewCell
+            guard let privacyStatementCell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifierPrivacy, for: indexPath) as? textViewTableViewCell
             else { return UITableViewCell() }
             
             privacyStatementCell.setupCellViews(title: "ChatLoader's privacy statement",
@@ -197,7 +210,21 @@ class aboutViewController: UIViewController, UITableViewDataSource, UITableViewD
             
             return privacyStatementCell
         }
-        else {
+        else if indexPath.section == 4 {
+            //Limitations
+            
+            guard let privacyStatementCell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifierPrivacy, for: indexPath) as? textViewTableViewCell
+            else { return UITableViewCell() }
+            
+            privacyStatementCell.setupCellViews(title: "export limitations page",
+                                                value: "Due to information being lost during the export from WhatsApp, there are limitations in recreating chats:\n\nFor example, replies to a message are *not* exported.\n\nPlease refer to the source chat in WhatsApp to understand the original context of messages.\n\nFor more information on what information is (and is *not*) captured when exporting from WhatsApp, please visit the export limitations page.",
+                                                action: "https://pauldisrupts.github.io/chattools/exportlimitations.html")
+            
+            privacyStatementCell.isUserInteractionEnabled = true
+            
+            return privacyStatementCell
+        }
+        else if indexPath.section == 5 {
             //Acknowledgements
             cell.setupCellViews(title: tableContent[indexPath.section][indexPath.row], value: nil, action: tableContent[indexPath.section][indexPath.row])
         }
@@ -212,6 +239,17 @@ class aboutViewController: UIViewController, UITableViewDataSource, UITableViewD
             tableAbout.selectRow(at: indexPath, animated: true, scrollPosition: .none)
             
             if indexPath.section == 0 {
+                //Similar apps you might like
+                let pageVC = modalPageViewController()
+                
+                let navVC = UINavigationController(rootViewController: pageVC)
+                navVC.modalPresentationStyle = .pageSheet
+                
+                self.present(navVC, animated: true, completion: {
+                    self.tableAbout.deselectRow(at: indexPath, animated: true)
+                })
+            }
+            else if indexPath.section == 1 {
                 //Get in touch
                 
                 if indexPath.row == 0 {
@@ -244,7 +282,7 @@ class aboutViewController: UIViewController, UITableViewDataSource, UITableViewD
                 }
                 
             } //if indexPath.section == 0
-            else if indexPath.section == 3 {
+            else if indexPath.section == 5 {
                 //Acknowledgements
                 
                 let urlString = urlLinks[indexPath.row]

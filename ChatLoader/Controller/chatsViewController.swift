@@ -54,9 +54,11 @@ class chatsViewController: UIViewController, UITableViewDataSource, UITableViewD
         tableChats.delegate = self
         tableChats.register(chatTableViewCell.self, forCellReuseIdentifier: cellReuseIdentifier)
         
-        tableChats.backgroundColor = UIColor.secondarySystemGroupedBackground    //optional superficial changes: UIColor.secondarySystemGroupedBackground
         tableChats.rowHeight = UITableView.automaticDimension
         tableChats.estimatedRowHeight = self.estimatedRowHeight
+        
+        //optional superficial changes: Left as system defaults. Alternate: UIColor.systemGroupedBackground; UIColor.secondarySystemGroupedBackground
+//        tableChats.backgroundColor = UIColor.secondarySystemGroupedBackground
         
         tableChats.translatesAutoresizingMaskIntoConstraints = false
         
@@ -88,7 +90,9 @@ class chatsViewController: UIViewController, UITableViewDataSource, UITableViewD
         
     #if targetEnvironment(simulator)
         
-        let loadChatButton = UIBarButtonItem(title: "Load chat", style: .plain, target: self, action: #selector(self.loadFileForSimulator))
+        let loadChatButton = UIBarButtonItem(title: "Load chat", style: .plain, target: self, action: #selector(self.loadFileForSimulator))   //load exported WhatsApp chat .zip file
+//        let loadChatButton = UIBarButtonItem(title: "In-app purchase", style: .plain, target: self, action: #selector(self.testInAppPurchase))  //test in-app purchases
+        
         loadChatButton.tintColor = Helper.app.colorPrimary
         self.navigationItem.rightBarButtonItems = [loadChatButton]
     
@@ -278,6 +282,17 @@ class chatsViewController: UIViewController, UITableViewDataSource, UITableViewD
         catch let error as NSError {
             print("ERROR: chatsViewControllerloadFileForSimulator(): let filenames = try fileManager.contentsOfDirectory(atPath: chatLoaderURL.path) as [String]?\n\t\(error)")
         }
+    }
+    
+    
+    @objc func testInAppPurchase() {
+        
+        let vc = inAppPurchaseViewController()
+        vc.delegate = self
+        
+        let navVC = UINavigationController(rootViewController: vc)
+        
+        self.present(navVC, animated: true)
     }
     
     
@@ -763,5 +778,12 @@ class chatsViewController: UIViewController, UITableViewDataSource, UITableViewD
         
         self.present(alertController, animated: true) {}
     }
+    
+    
+    func protocolDataChanged_inAppPurchase(message: String) {
+        
+        print("chatsViewController.protocolDataChanged_inAppPurchase(message: String): message: \(message)")
+    }
+    
 }
 

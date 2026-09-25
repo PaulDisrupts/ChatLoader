@@ -19,6 +19,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         Helper.app.setIsLoading(isLoading: false)                               //reset isLoading variable every launch of app
         UserDefaults.standard.set(false, forKey: Helper.app.keyTutorialShown)   //only show tutorial once per instance of app
+        
+        if Helper.app.appVersion != UserDefaults.standard.string(forKey: Helper.app.keyVersionNumber) ?? "" {
+            UserDefaults.standard.set(Helper.app.appVersion, forKey: Helper.app.keyVersionNumber)
+        }
+        
         UserDefaults.standard.synchronize()
         
         if !UserDefaults.standard.bool(forKey: Helper.app.keyHasBeenLaunched) {
@@ -26,9 +31,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
             UserDefaults.standard.set(true, forKey: Helper.app.keyHasBeenLaunched)
             UserDefaults.standard.set(false, forKey: Helper.app.keyHasRated)
-            UserDefaults.standard.set(0, forKey: Helper.app.keyTotalChatsLoaded)    //Helper.app.getNextChatID() will increment, ie first chat loaded will start at 1
-            UserDefaults.standard.set("1.0", forKey: Helper.app.keyVersionNumber)
-            UserDefaults.standard.set("Free", forKey: Helper.app.keyInAppPurchase)  //Free; Paid
+            UserDefaults.standard.set(0, forKey: Helper.app.keyTotalChatsLoaded)                    //Helper.app.getNextChatID() will increment, ie first chat loaded will start at 1
+            UserDefaults.standard.set(Helper.app.appVersion, forKey: Helper.app.keyVersionNumber)
+            UserDefaults.standard.set("Free", forKey: Helper.app.keyInAppPurchase)                  //Free; Paid
             
             UserDefaults.standard.synchronize()
             

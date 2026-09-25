@@ -461,6 +461,23 @@ class Helper {
         UserDefaults.standard.synchronize()
     }
     
+    
+    func inAppPurchaseRequired() -> Bool {
+        if UserDefaults.standard.string(forKey: self.keyInAppPurchase) == "Free" {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    
+    func inAppPurchaseSuccessful() {
+        
+        UserDefaults.standard.set("Paid", forKey: self.keyInAppPurchase)
+        UserDefaults.standard.synchronize()
+        print("Helper:inAppPurchaseSuccessful: Upgrade successful!")
+    }
+    
 }
 
 
@@ -572,6 +589,15 @@ extension UIViewController {
         }
     }
     
+    
+    func getTopBarHeight() -> CGFloat {
+        
+        let statusBarHeight = view.window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0.0
+        let navBarHeight = self.navigationController?.navigationBar.frame.height ?? 0.0
+        
+        return statusBarHeight + navBarHeight
+    }
+    
 }
 
 
@@ -601,4 +627,6 @@ protocol protocolDataChanged {
     func protocolDataChanged_chatLoaded()
     
     func protocolDataChanged_error(errorMessage: String)
+    
+    func protocolDataChanged_inAppPurchase(message: String)
 }

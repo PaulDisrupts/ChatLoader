@@ -5,7 +5,7 @@
 //  Created by Paul Michael Whiten on 12/2/21.
 //
 //
-//  Handles the file processing of an exported WhatsApp chat .zip on a background process
+//  Handles the file processing of an exported WhatsApp chat .zip file on a background process
 //
 //  Usage:
 //      - call init(delegate: protocolFileProcessor, inputFile: URL) from a ViewController set as delegate: protocolFileProcessor? and also pass in the inputFileURL: URL?
